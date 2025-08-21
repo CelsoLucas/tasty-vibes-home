@@ -40,17 +40,10 @@ const Login = () => {
     }
   };
 
-  // Validação do email em tempo real
-  const handleEmailChange = async (value: string) => {
+  // Validação do email sem verificação em tempo real
+  const handleEmailChange = (value: string) => {
     setEmail(value);
     setEmailError("");
-    
-    if (value && value.includes('@') && value.length > 5) {
-      const emailExists = await checkEmailExists(value);
-      if (!emailExists) {
-        setEmailError("Este email não está cadastrado");
-      }
-    }
   };
 
   // Validação da senha
