@@ -142,4 +142,15 @@ All colors MUST be HSL.
   .ease-spring {
     transition-timing-function: var(--ease-spring);
   }
+
+  .line-clamp-1 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 1;
+  }
+
+  .animate-fade-in {
+    animation: fadeIn 0.3s ease-in-out;
+  }
 }
