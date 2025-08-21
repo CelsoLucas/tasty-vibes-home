@@ -360,7 +360,7 @@ const ProfilePage = () => {
                   {profile?.display_name || user.email?.split('@')[0] || "Usuário"}
                 </h2>
                 <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
-                  {profile?.bio || "Amante da gastronomia e explorador de novos sabores 🍕✨"}
+                  {profile?.bio || "Bio Vazia"}
                 </p>
                 <Button 
                   variant="outline" 
