@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Mail, Lock, Eye, EyeOff } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -94,9 +95,12 @@ const Login = () => {
 
             {/* Forgot Password Link */}
             <div className="text-center">
-              <button className="text-sm text-primary hover:text-primary/80 transition-colors font-medium">
+              <Link 
+                to="/forgot-password" 
+                className="text-sm text-primary hover:text-primary/80 transition-colors font-medium"
+              >
                 Esqueci minha senha
-              </button>
+              </Link>
             </div>
 
             {/* Divider */}
