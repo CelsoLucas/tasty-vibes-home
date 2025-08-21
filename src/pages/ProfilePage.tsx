@@ -74,7 +74,6 @@ const mockReviews = [
 
 const configOptions = [
   { icon: Edit3, label: "Informações Pessoais", action: "edit-profile" },
-  { icon: Lock, label: "Alterar Senha", action: "change-password" },
   { icon: Sliders, label: "Preferências", action: "preferences" },
   { icon: LogOut, label: "Sair", action: "logout", danger: true }
 ];
@@ -91,11 +90,15 @@ const ProfilePage = () => {
   const [editForm, setEditForm] = useState({
     display_name: '',
     bio: '',
-    avatar_url: ''
+    avatar_url: '',
+    email: '',
+    newPassword: '',
+    currentPassword: ''
   });
   const [saving, setSaving] = useState(false);
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string>('');
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
 
   useEffect(() => {
     // Set up auth state listener
@@ -183,10 +186,14 @@ const ProfilePage = () => {
     setEditForm({
       display_name: profile?.display_name || '',
       bio: profile?.bio || '',
-      avatar_url: profile?.avatar_url || ''
+      avatar_url: profile?.avatar_url || '',
+      email: user?.email || '',
+      newPassword: '',
+      currentPassword: ''
     });
     setAvatarPreview(profile?.avatar_url || '');
     setAvatarFile(null);
+    setShowCurrentPassword(false);
     setIsEditModalOpen(true);
   };
 
@@ -244,6 +251,73 @@ const ProfilePage = () => {
         }
       }
 
+      // Verifica se há mudanças no email ou senha
+      const emailChanged = editForm.email !== user.email;
+      const passwordChanged = editForm.newPassword.trim() !== '';
+
+      if (emailChanged || passwordChanged) {
+        if (!editForm.currentPassword) {
+          toast({
+            title: "Senha necessária",
+            description: "Para alterar email ou senha, confirme sua senha atual.",
+            variant: "destructive",
+          });
+          setSaving(false);
+          return;
+        }
+
+        // Verifica a senha atual
+        const { error: signInError } = await supabase.auth.signInWithPassword({
+          email: user.email!,
+          password: editForm.currentPassword
+        });
+
+        if (signInError) {
+          toast({
+            title: "Senha incorreta",
+            description: "A senha atual está incorreta.",
+            variant: "destructive",
+          });
+          setSaving(false);
+          return;
+        }
+
+        // Atualiza email se mudou
+        if (emailChanged) {
+          const { error: emailError } = await supabase.auth.updateUser({
+            email: editForm.email
+          });
+
+          if (emailError) {
+            toast({
+              title: "Erro ao atualizar email",
+              description: emailError.message,
+              variant: "destructive",
+            });
+            setSaving(false);
+            return;
+          }
+        }
+
+        // Atualiza senha se mudou
+        if (passwordChanged) {
+          const { error: passwordError } = await supabase.auth.updateUser({
+            password: editForm.newPassword
+          });
+
+          if (passwordError) {
+            toast({
+              title: "Erro ao atualizar senha",
+              description: passwordError.message,
+              variant: "destructive",
+            });
+            setSaving(false);
+            return;
+          }
+        }
+      }
+
+      // Atualiza o perfil na tabela profiles
       const { error } = await (supabase as any)
         .from('profiles')
         .upsert({
@@ -251,7 +325,7 @@ const ProfilePage = () => {
           display_name: editForm.display_name,
           bio: editForm.bio,
           avatar_url: avatarUrl,
-          email: user.email
+          email: emailChanged ? editForm.email : user.email
         });
 
       if (error) {
@@ -263,7 +337,9 @@ const ProfilePage = () => {
       } else {
         toast({
           title: "Perfil atualizado!",
-          description: "Suas alterações foram salvas com sucesso.",
+          description: emailChanged || passwordChanged ? 
+            "Suas alterações foram salvas. Você pode precisar fazer login novamente." :
+            "Suas alterações foram salvas com sucesso.",
         });
         
         // Recarrega o perfil
@@ -271,6 +347,14 @@ const ProfilePage = () => {
         setIsEditModalOpen(false);
         setAvatarFile(null);
         setAvatarPreview('');
+        setShowCurrentPassword(false);
+
+        // Se mudou email ou senha, faz logout para reautenticação
+        if (emailChanged || passwordChanged) {
+          setTimeout(() => {
+            handleLogout();
+          }, 2000);
+        }
       }
     } catch (error) {
       console.error('Error saving profile:', error);
@@ -289,8 +373,12 @@ const ProfilePage = () => {
     setEditForm({
       display_name: '',
       bio: '',
-      avatar_url: ''
+      avatar_url: '',
+      email: '',
+      newPassword: '',
+      currentPassword: ''
     });
+    setShowCurrentPassword(false);
   };
 
   const handleConfigAction = (action: string) => {
@@ -552,6 +640,58 @@ const ProfilePage = () => {
                 rows={3}
               />
             </div>
+
+            <div className="grid gap-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                value={editForm.email}
+                onChange={(e) => {
+                  setEditForm(prev => ({ ...prev, email: e.target.value }));
+                  // Mostra campo de senha atual se mudou email
+                  if (e.target.value !== user?.email) {
+                    setShowCurrentPassword(true);
+                  } else if (editForm.newPassword === '') {
+                    setShowCurrentPassword(false);
+                  }
+                }}
+                placeholder="Seu email"
+              />
+            </div>
+
+            <div className="grid gap-2">
+              <Label htmlFor="newPassword">Nova Senha</Label>
+              <Input
+                id="newPassword"
+                type="password"
+                value={editForm.newPassword}
+                onChange={(e) => {
+                  setEditForm(prev => ({ ...prev, newPassword: e.target.value }));
+                  // Mostra campo de senha atual se definiu nova senha
+                  if (e.target.value !== '') {
+                    setShowCurrentPassword(true);
+                  } else if (editForm.email === user?.email) {
+                    setShowCurrentPassword(false);
+                  }
+                }}
+                placeholder="Digite uma nova senha (opcional)"
+              />
+            </div>
+
+            {/* Campo de senha atual - só aparece quando necessário */}
+            {showCurrentPassword && (
+              <div className="grid gap-2">
+                <Label htmlFor="currentPassword">Senha Atual</Label>
+                <Input
+                  id="currentPassword"
+                  type="password"
+                  value={editForm.currentPassword}
+                  onChange={(e) => setEditForm(prev => ({ ...prev, currentPassword: e.target.value }))}
+                  placeholder="Digite sua senha atual para confirmar"
+                />
+              </div>
+            )}
           </div>
           
           <DialogFooter>
