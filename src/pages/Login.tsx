@@ -18,45 +18,36 @@ const Login = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  // Função para verificar se o email existe
+  // Função para verificar se o email existe usando reset de senha
   const checkEmailExists = async (email: string) => {
     if (!email) return false;
     
     try {
-      // Tentativa de login com uma senha inválida para verificar se o email existe
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password: 'invalid_password_check_123',
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: 'https://example.com/reset' // URL fictícia apenas para teste
       });
       
-      // Se o erro for de senha incorreta, significa que o email existe
-      if (error?.message.includes('Invalid login credentials')) {
+      // Se não há erro, o email existe
+      if (!error) {
         return true;
       }
       
-      // Se o erro for outro, verificamos se é relacionado ao email não encontrado
-      if (error?.message.includes('Email not confirmed') || 
-          error?.message.includes('Invalid login credentials')) {
-        return true;
+      // Se há erro, verificar o tipo
+      if (error.message.includes('Unable to validate email address') || 
+          error.message.includes('User not found')) {
+        return false;
       }
       
-      return false;
+      return true; // Assumir que existe em caso de outros erros
     } catch {
-      return false;
+      return true; // Em caso de erro, assumir que existe para não bloquear
     }
   };
 
-  // Validação do email em tempo real
-  const handleEmailChange = async (value: string) => {
+  // Validação do email em tempo real (removida para evitar conflitos)
+  const handleEmailChange = (value: string) => {
     setEmail(value);
     setEmailError("");
-    
-    if (value && value.includes('@')) {
-      const emailExists = await checkEmailExists(value);
-      if (!emailExists) {
-        setEmailError("Este email não está cadastrado");
-      }
-    }
   };
 
   // Validação da senha
@@ -80,11 +71,21 @@ const Login = () => {
       if (error) {
         // Verificar tipo específico de erro
         if (error.message.includes('Invalid login credentials')) {
-          // Verificar se o email existe para determinar se o erro é do email ou senha
-          const emailExists = await checkEmailExists(email);
-          if (!emailExists) {
-            setEmailError("Este email não está cadastrado");
-          } else {
+          // Tentar verificar se é problema de email ou senha
+          try {
+            // Usar recuperação de senha para verificar se email existe
+            const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
+              redirectTo: 'https://example.com/reset'
+            });
+            
+            if (resetError && (resetError.message.includes('Unable to validate email address') || 
+                              resetError.message.includes('User not found'))) {
+              setEmailError("Este email não está cadastrado");
+            } else {
+              setPasswordError("Senha incorreta");
+            }
+          } catch {
+            // Se não conseguir verificar, assumir que é erro de senha
             setPasswordError("Senha incorreta");
           }
         } else if (error.message.includes('Email not confirmed')) {
