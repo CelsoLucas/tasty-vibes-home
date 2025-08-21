@@ -27,7 +27,9 @@ import {
   Info,
   LogOut,
   Trash2,
-  MoreHorizontal
+  MoreHorizontal,
+  Camera,
+  Upload
 } from "lucide-react";
 
 // Mock user data
@@ -95,6 +97,8 @@ const ProfilePage = () => {
     avatar_url: ''
   });
   const [saving, setSaving] = useState(false);
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState<string>('');
 
   useEffect(() => {
     // Set up auth state listener
@@ -184,7 +188,48 @@ const ProfilePage = () => {
       bio: profile?.bio || '',
       avatar_url: profile?.avatar_url || ''
     });
+    setAvatarPreview(profile?.avatar_url || '');
+    setAvatarFile(null);
     setIsEditModalOpen(true);
+  };
+
+  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setAvatarFile(file);
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setAvatarPreview(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const uploadAvatar = async (file: File): Promise<string | null> => {
+    if (!user) return null;
+    
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${user.id}/avatar.${fileExt}`;
+      
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(fileName, file, { upsert: true });
+      
+      if (uploadError) {
+        console.error('Upload error:', uploadError);
+        return null;
+      }
+      
+      const { data } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(fileName);
+      
+      return data.publicUrl;
+    } catch (error) {
+      console.error('Error uploading avatar:', error);
+      return null;
+    }
   };
 
   const handleSaveProfile = async () => {
@@ -192,13 +237,23 @@ const ProfilePage = () => {
 
     setSaving(true);
     try {
+      let avatarUrl = editForm.avatar_url;
+      
+      // Upload do avatar se um arquivo foi selecionado
+      if (avatarFile) {
+        const uploadedUrl = await uploadAvatar(avatarFile);
+        if (uploadedUrl) {
+          avatarUrl = uploadedUrl;
+        }
+      }
+
       const { error } = await (supabase as any)
         .from('profiles')
         .upsert({
           id: user.id,
           display_name: editForm.display_name,
           bio: editForm.bio,
-          avatar_url: editForm.avatar_url,
+          avatar_url: avatarUrl,
           email: user.email
         });
 
@@ -217,6 +272,8 @@ const ProfilePage = () => {
         // Recarrega o perfil
         await fetchProfile(user.id);
         setIsEditModalOpen(false);
+        setAvatarFile(null);
+        setAvatarPreview('');
       }
     } catch (error) {
       console.error('Error saving profile:', error);
@@ -462,6 +519,32 @@ const ProfilePage = () => {
           </DialogHeader>
           
           <div className="grid gap-4 py-4">
+            {/* Avatar Upload */}
+            <div className="flex justify-center mb-4">
+              <div className="relative">
+                <div className="w-24 h-24 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
+                  <img 
+                    src={avatarPreview || profile?.avatar_url || "/placeholder.svg"} 
+                    alt="Avatar"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <label 
+                  htmlFor="avatar-upload" 
+                  className="absolute bottom-0 right-0 bg-primary text-primary-foreground rounded-full p-2 cursor-pointer hover:bg-primary/90 transition-colors"
+                >
+                  <Camera className="h-4 w-4" />
+                </label>
+                <input
+                  id="avatar-upload"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleAvatarChange}
+                  className="hidden"
+                />
+              </div>
+            </div>
+
             <div className="grid gap-2">
               <Label htmlFor="display_name">Nome de Exibição</Label>
               <Input
@@ -480,16 +563,6 @@ const ProfilePage = () => {
                 onChange={(e) => setEditForm(prev => ({ ...prev, bio: e.target.value }))}
                 placeholder="Conte um pouco sobre você..."
                 rows={3}
-              />
-            </div>
-            
-            <div className="grid gap-2">
-              <Label htmlFor="avatar_url">URL do Avatar</Label>
-              <Input
-                id="avatar_url"
-                value={editForm.avatar_url}
-                onChange={(e) => setEditForm(prev => ({ ...prev, avatar_url: e.target.value }))}
-                placeholder="https://..."
               />
             </div>
           </div>
