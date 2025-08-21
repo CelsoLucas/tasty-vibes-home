@@ -1,8 +1,6 @@
 import { AppHeader } from "@/components/AppHeader";
 import { RestaurantSection } from "@/components/RestaurantSection";
 import { BottomNavigation } from "@/components/BottomNavigation";
-import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
 
 // Import restaurant images
 import restaurant1 from "@/assets/restaurant-1.jpg";
@@ -51,15 +49,6 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background pb-20">
       <AppHeader />
-      
-      {/* Link para Login */}
-      <div className="text-center py-4">
-        <Link to="/login">
-          <Button variant="outline" className="mb-4">
-            Ver Tela de Login
-          </Button>
-        </Link>
-      </div>
       
       <main className="space-y-6 pt-4 pb-4">
         <RestaurantSection title="Melhores da Cidade" restaurants={bestInCity} />
