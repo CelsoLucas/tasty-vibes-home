@@ -19,7 +19,7 @@ export const BottomNavigation = () => {
       <div className="relative bg-white/80 dark:bg-gray-900/80 backdrop-blur-lg border border-white/20 dark:border-gray-700/20 rounded-3xl px-8 py-4 shadow-lg shadow-gray-900/10">
         {/* Bubble indicator */}
         <div 
-          className="absolute top-2 w-12 h-12 bg-gradient-to-r from-orange-500 to-orange-600 rounded-full transition-transform duration-500 ease-out-back shadow-lg shadow-orange-500/25"
+          className="absolute top-2 w-12 h-12 bg-gradient-to-r from-orange-500 to-orange-600 rounded-full transition-transform duration-300 ease-in-out shadow-lg shadow-orange-500/25"
           style={{
             transform: `translateX(${activeIndex * 64 - 4}px)`,
           }}
@@ -35,19 +35,17 @@ export const BottomNavigation = () => {
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`relative flex flex-col items-center transition-all duration-300 ease-out-back group ${
+                  className={`relative flex flex-col items-center group ${
                     isActive ? 'justify-start w-10 h-16' : 'justify-center w-10 h-10'
                   }`}
                 >
                   {/* Icon */}
-                  <div className={`flex items-center justify-center w-10 h-10 transition-all duration-300 ease-out-back ${
-                    isActive ? '-translate-y-1' : ''
-                  }`}>
+                  <div className="flex items-center justify-center w-10 h-10">
                     <IconComponent 
-                      className={`transition-all duration-300 ease-out-back ${
+                      className={`transition-colors duration-200 ${
                         isActive 
-                          ? 'w-7 h-7 text-white scale-125' 
-                          : 'w-5 h-5 text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-300 group-hover:scale-105'
+                          ? 'w-6 h-6 text-white' 
+                          : 'w-5 h-5 text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-300'
                       }`}
                     />
                   </div>
