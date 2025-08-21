@@ -5,7 +5,7 @@ import { useLocation } from "react-router-dom";
 const tabs = [
   { id: 'home', icon: Home, label: 'Início', path: '/' },
   { id: 'search', icon: Search, label: 'Buscar', path: '/search' },
-  { id: 'add', icon: Plus, label: 'Adicionar', path: '/add' },
+  { id: 'add', icon: Plus, label: 'Adicionar', path: '/add-review' },
   { id: 'profile', icon: User, label: 'Perfil', path: '/profile' }
 ];
 
