@@ -9,7 +9,7 @@ import {
   User, 
   Edit3, 
   Star, 
-  Camera, 
+  Trophy, 
   MapPin, 
   MessageSquare,
   Settings,
@@ -30,9 +30,8 @@ const mockUser = {
   bio: "Amante da gastronomia e explorador de novos sabores 🍕✨",
   stats: {
     reviews: 42,
-    photos: 156,
-    restaurants: 38,
-    averageRating: 4.2
+    level: "Expert",
+    restaurants: 38
   }
 };
 
@@ -142,7 +141,7 @@ const ProfilePage = () => {
         </Card>
 
         {/* Estatísticas */}
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-3 gap-4">
           <Card>
             <CardContent className="p-4 text-center">
               <div className="flex items-center justify-center w-10 h-10 bg-primary/10 rounded-full mx-auto mb-2">
@@ -155,11 +154,11 @@ const ProfilePage = () => {
 
           <Card>
             <CardContent className="p-4 text-center">
-              <div className="flex items-center justify-center w-10 h-10 bg-blue-500/10 rounded-full mx-auto mb-2">
-                <Camera className="h-5 w-5 text-blue-500" />
+              <div className="flex items-center justify-center w-10 h-10 bg-yellow-500/10 rounded-full mx-auto mb-2">
+                <Trophy className="h-5 w-5 text-yellow-500" />
               </div>
-              <p className="text-2xl font-bold text-foreground">{user.stats.photos}</p>
-              <p className="text-sm text-muted-foreground">Fotos</p>
+              <p className="text-2xl font-bold text-foreground">{user.stats.level}</p>
+              <p className="text-sm text-muted-foreground">Nível</p>
             </CardContent>
           </Card>
 
@@ -170,16 +169,6 @@ const ProfilePage = () => {
               </div>
               <p className="text-2xl font-bold text-foreground">{user.stats.restaurants}</p>
               <p className="text-sm text-muted-foreground">Restaurantes</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-4 text-center">
-              <div className="flex items-center justify-center w-10 h-10 bg-yellow-500/10 rounded-full mx-auto mb-2">
-                <Star className="h-5 w-5 text-yellow-500" />
-              </div>
-              <p className="text-2xl font-bold text-foreground">{user.stats.averageRating}</p>
-              <p className="text-sm text-muted-foreground">Média</p>
             </CardContent>
           </Card>
         </div>
