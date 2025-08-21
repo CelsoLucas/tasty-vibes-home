@@ -377,17 +377,7 @@ const ProfilePage = () => {
         </Card>
 
         {/* Estatísticas */}
-        <div className="grid grid-cols-3 gap-4">
-          <Card>
-            <CardContent className="p-4 text-center">
-              <div className="flex items-center justify-center w-10 h-10 bg-primary/10 rounded-full mx-auto mb-2">
-                <MessageSquare className="h-5 w-5 text-primary" />
-              </div>
-              <p className="text-2xl font-bold text-foreground">0</p>
-              <p className="text-sm text-muted-foreground">Avaliações</p>
-            </CardContent>
-          </Card>
-
+        <div className="grid grid-cols-2 gap-4">
           <Card>
             <CardContent className="p-4 text-center">
               <div className="flex items-center justify-center w-10 h-10 bg-yellow-500/10 rounded-full mx-auto mb-2">
