@@ -757,19 +757,17 @@ const ProfilePage = () => {
               />
             </div>
 
-            {/* Campo de senha atual - só aparece quando está editando */}
-            {isEditingPersonalInfo && (
-              <div className="grid gap-2">
-                <Label htmlFor="current_password">Senha Atual</Label>
-                <Input
-                  id="current_password"
-                  type="password"
-                  value={personalInfoForm.currentPassword}
-                  onChange={(e) => setPersonalInfoForm(prev => ({ ...prev, currentPassword: e.target.value }))}
-                  placeholder="Digite sua senha atual para confirmar"
-                />
-              </div>
-            )}
+            <div className="grid gap-2">
+              <Label htmlFor="current_password">Senha Atual</Label>
+              <Input
+                id="current_password"
+                type="password"
+                value={personalInfoForm.currentPassword}
+                onChange={(e) => setPersonalInfoForm(prev => ({ ...prev, currentPassword: e.target.value }))}
+                placeholder="Digite sua senha atual"
+                disabled={!isEditingPersonalInfo}
+              />
+            </div>
           </div>
           
           <DialogFooter>
