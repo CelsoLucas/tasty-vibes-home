@@ -42,9 +42,9 @@ export const BottomNavigation = () => {
                   {/* Icon */}
                   <div className="flex items-center justify-center w-10 h-10">
                     <IconComponent 
-                      className={`transition-colors duration-200 ${
+                      className={`transition-all duration-200 ${
                         isActive 
-                          ? 'w-6 h-6 text-white' 
+                          ? 'w-7 h-7 text-white' 
                           : 'w-5 h-5 text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-300'
                       }`}
                     />
