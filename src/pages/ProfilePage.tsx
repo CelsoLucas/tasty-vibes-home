@@ -80,6 +80,7 @@ const configOptions = [
 ];
 
 const ProfilePage = () => {
+  console.log("ProfilePage component rendering");
   const navigate = useNavigate();
   const { toast } = useToast();
   const [user, setUser] = useState<User | null>(null);
