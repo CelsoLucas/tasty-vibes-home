@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -8,8 +8,8 @@ import { BottomNavigation } from "@/components/BottomNavigation";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { User, Session } from '@supabase/supabase-js';
 import { 
-  User, 
   Edit3, 
   Star, 
   Trophy, 
@@ -79,6 +79,64 @@ const configOptions = [
 const ProfilePage = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
+  const [profile, setProfile] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [reviews] = useState(mockReviews);
+
+  useEffect(() => {
+    // Set up auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        setSession(session);
+        setUser(session?.user ?? null);
+        if (session?.user) {
+          fetchProfile(session.user.id);
+        } else {
+          setLoading(false);
+        }
+      }
+    );
+
+    // Check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+      if (session?.user) {
+        fetchProfile(session.user.id);
+      } else {
+        setLoading(false);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const fetchProfile = async (userId: string) => {
+    try {
+      const { data, error } = await (supabase as any)
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .maybeSingle();
+
+      if (error) {
+        console.error('Error fetching profile:', error);
+        toast({
+          title: "Erro ao carregar perfil",
+          description: "Não foi possível carregar os dados do perfil.",
+          variant: "destructive",
+        });
+      } else {
+        setProfile(data);
+      }
+    } catch (error) {
+      console.error('Error:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleLogout = async () => {
     try {
@@ -107,8 +165,6 @@ const ProfilePage = () => {
       });
     }
   };
-  const [user] = useState(mockUser);
-  const [reviews] = useState(mockReviews);
 
   const handleEditProfile = () => {
     // TODO: Implementar edição de perfil
@@ -138,6 +194,22 @@ const ProfilePage = () => {
     return comment.length > maxLength ? comment.substring(0, maxLength) + "..." : comment;
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-muted-foreground">Erro ao carregar perfil</p>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background pb-20">
       {/* Header */}
@@ -151,17 +223,19 @@ const ProfilePage = () => {
               {/* Avatar */}
               <div className="w-20 h-20 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
                 <img 
-                  src={user.avatar} 
-                  alt={user.name}
+                  src={profile?.avatar_url || "/placeholder.svg"} 
+                  alt={profile?.display_name || user.email || "Usuário"}
                   className="w-full h-full object-cover"
                 />
               </div>
               
               {/* Info do usuário */}
               <div className="flex-1">
-                <h2 className="text-xl font-bold text-foreground">{user.name}</h2>
+                <h2 className="text-xl font-bold text-foreground">
+                  {profile?.display_name || user.email?.split('@')[0] || "Usuário"}
+                </h2>
                 <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
-                  {user.bio}
+                  {profile?.bio || "Amante da gastronomia e explorador de novos sabores 🍕✨"}
                 </p>
                 <Button 
                   variant="outline" 
@@ -184,7 +258,7 @@ const ProfilePage = () => {
               <div className="flex items-center justify-center w-10 h-10 bg-primary/10 rounded-full mx-auto mb-2">
                 <MessageSquare className="h-5 w-5 text-primary" />
               </div>
-              <p className="text-2xl font-bold text-foreground">{user.stats.reviews}</p>
+              <p className="text-2xl font-bold text-foreground">0</p>
               <p className="text-sm text-muted-foreground">Avaliações</p>
             </CardContent>
           </Card>
@@ -194,7 +268,7 @@ const ProfilePage = () => {
               <div className="flex items-center justify-center w-10 h-10 bg-yellow-500/10 rounded-full mx-auto mb-2">
                 <Trophy className="h-5 w-5 text-yellow-500" />
               </div>
-              <p className="text-2xl font-bold text-foreground">{user.stats.level}</p>
+              <p className="text-2xl font-bold text-foreground">Iniciante</p>
               <p className="text-sm text-muted-foreground">Nível</p>
             </CardContent>
           </Card>
@@ -204,7 +278,7 @@ const ProfilePage = () => {
               <div className="flex items-center justify-center w-10 h-10 bg-green-500/10 rounded-full mx-auto mb-2">
                 <MapPin className="h-5 w-5 text-green-500" />
               </div>
-              <p className="text-2xl font-bold text-foreground">{user.stats.restaurants}</p>
+              <p className="text-2xl font-bold text-foreground">0</p>
               <p className="text-sm text-muted-foreground">Restaurantes</p>
             </CardContent>
           </Card>
