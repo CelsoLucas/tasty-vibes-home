@@ -40,7 +40,7 @@ export const BottomNavigation = () => {
                   }`}
                 >
                   {/* Icon */}
-                  <div className={`flex items-center justify-center w-10 h-10 ${isActive ? 'mt-1' : ''}`}>
+                  <div className="flex items-center justify-center w-10 h-10">
                     <IconComponent 
                       className={`transition-all duration-200 ${
                         isActive 
