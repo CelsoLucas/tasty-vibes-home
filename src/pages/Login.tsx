@@ -29,8 +29,6 @@ const Login = () => {
           <div className="w-20 h-20 bg-gradient-to-r from-primary to-primary-glow rounded-full mx-auto mb-4 flex items-center justify-center">
             <span className="text-2xl font-bold text-primary-foreground">L</span>
           </div>
-          <h1 className="text-2xl font-bold text-foreground">Bem-vindo de volta</h1>
-          <p className="text-muted-foreground mt-2">Entre na sua conta para continuar</p>
         </div>
 
         {/* Login Card */}
