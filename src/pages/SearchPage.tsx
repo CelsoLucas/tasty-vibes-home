@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Search, Filter, MapPin, Star } from "lucide-react";
 import { BottomNavigation } from "@/components/BottomNavigation";
+import { AppHeader } from "@/components/AppHeader";
 
 const categories = [
   { id: "lanches", name: "Lanches", emoji: "🍔" },
@@ -77,8 +78,11 @@ const SearchPage = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header com busca */}
-      <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm border-b border-border p-4">
+      {/* Header */}
+      <AppHeader />
+      
+      {/* Campo de busca */}
+      <div className="p-4 bg-background border-b border-border">
         <div className="flex gap-3">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
