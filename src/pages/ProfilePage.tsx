@@ -73,12 +73,9 @@ const mockReviews = [
 ];
 
 const configOptions = [
-  { icon: Edit3, label: "Editar Perfil", action: "edit-profile" },
+  { icon: Edit3, label: "Informações Pessoais", action: "edit-profile" },
   { icon: Lock, label: "Alterar Senha", action: "change-password" },
-  { icon: CreditCard, label: "Gerenciar Assinatura", action: "subscription" },
   { icon: Sliders, label: "Preferências", action: "preferences" },
-  { icon: HelpCircle, label: "Ajuda", action: "help" },
-  { icon: Info, label: "Sobre", action: "about" },
   { icon: LogOut, label: "Sair", action: "logout", danger: true }
 ];
 
