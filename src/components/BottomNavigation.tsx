@@ -26,7 +26,7 @@ export const BottomNavigation = () => {
         />
         
         {/* Tab buttons */}
-        <div className="relative flex items-start gap-6">
+        <div className="relative flex items-center justify-center gap-6">
           {tabs.map((tab) => {
             const isActive = activeTab === tab.id;
             const IconComponent = tab.icon;
