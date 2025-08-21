@@ -23,25 +23,25 @@ const Register = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  // Função para verificar se o email já está cadastrado
+  // Função para verificar se o email já está cadastrado no banco de dados
   const checkEmailAlreadyExists = async (email: string) => {
     if (!email) return false;
     
     try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password: 'invalid_password_check_123',
-      });
+      const { data, error } = await (supabase as any)
+        .from('profiles')
+        .select('email')
+        .eq('email', email)
+        .maybeSingle();
       
-      // Se o erro for de credenciais inválidas ou email não confirmado, significa que o email já existe
-      if (error?.message.includes('Invalid login credentials') || 
-          error?.message.includes('Email not confirmed')) {
-        return true;
+      if (error) {
+        console.error('Error checking email:', error);
+        return false; // Em caso de erro, permitir continuar
       }
       
-      return false;
+      return data !== null; // Se data existe, o email já foi cadastrado
     } catch {
-      return false;
+      return false; // Em caso de erro, permitir continuar
     }
   };
 

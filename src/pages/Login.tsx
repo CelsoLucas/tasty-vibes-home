@@ -18,36 +18,39 @@ const Login = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  // Função para verificar se o email existe usando reset de senha
+  // Função para verificar se o email existe no banco de dados
   const checkEmailExists = async (email: string) => {
     if (!email) return false;
     
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: 'https://example.com/reset' // URL fictícia apenas para teste
-      });
+      const { data, error } = await (supabase as any)
+        .from('profiles')
+        .select('email')
+        .eq('email', email)
+        .maybeSingle();
       
-      // Se não há erro, o email existe
-      if (!error) {
-        return true;
+      if (error) {
+        console.error('Error checking email:', error);
+        return true; // Em caso de erro, assumir que existe para não bloquear
       }
       
-      // Se há erro, verificar o tipo
-      if (error.message.includes('Unable to validate email address') || 
-          error.message.includes('User not found')) {
-        return false;
-      }
-      
-      return true; // Assumir que existe em caso de outros erros
+      return data !== null; // Se data existe, o email foi encontrado
     } catch {
-      return true; // Em caso de erro, assumir que existe para não bloquear
+      return true; // Em caso de erro, assumir que existe
     }
   };
 
-  // Validação do email em tempo real (removida para evitar conflitos)
-  const handleEmailChange = (value: string) => {
+  // Validação do email em tempo real
+  const handleEmailChange = async (value: string) => {
     setEmail(value);
     setEmailError("");
+    
+    if (value && value.includes('@') && value.length > 5) {
+      const emailExists = await checkEmailExists(value);
+      if (!emailExists) {
+        setEmailError("Este email não está cadastrado");
+      }
+    }
   };
 
   // Validação da senha
@@ -71,21 +74,11 @@ const Login = () => {
       if (error) {
         // Verificar tipo específico de erro
         if (error.message.includes('Invalid login credentials')) {
-          // Tentar verificar se é problema de email ou senha
-          try {
-            // Usar recuperação de senha para verificar se email existe
-            const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
-              redirectTo: 'https://example.com/reset'
-            });
-            
-            if (resetError && (resetError.message.includes('Unable to validate email address') || 
-                              resetError.message.includes('User not found'))) {
-              setEmailError("Este email não está cadastrado");
-            } else {
-              setPasswordError("Senha incorreta");
-            }
-          } catch {
-            // Se não conseguir verificar, assumir que é erro de senha
+          // Verificar se o email existe no banco de dados
+          const emailExists = await checkEmailExists(email);
+          if (!emailExists) {
+            setEmailError("Este email não está cadastrado");
+          } else {
             setPasswordError("Senha incorreta");
           }
         } else if (error.message.includes('Email not confirmed')) {
