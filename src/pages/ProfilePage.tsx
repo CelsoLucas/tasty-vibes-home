@@ -73,7 +73,8 @@ const mockReviews = [
 ];
 
 const configOptions = [
-  { icon: Edit3, label: "Informações Pessoais", action: "edit-profile" },
+  { icon: Edit3, label: "Editar Perfil", action: "edit-profile" },
+  { icon: Settings, label: "Informações Pessoais", action: "personal-info" },
   { icon: Sliders, label: "Preferências", action: "preferences" },
   { icon: LogOut, label: "Sair", action: "logout", danger: true }
 ];
@@ -86,19 +87,27 @@ const ProfilePage = () => {
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [reviews] = useState(mockReviews);
+  
+  // Estados para modal de editar perfil (foto, nome, bio)
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editForm, setEditForm] = useState({
     display_name: '',
     bio: '',
-    avatar_url: '',
+    avatar_url: ''
+  });
+  const [savingProfile, setSavingProfile] = useState(false);
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState<string>('');
+
+  // Estados para modal de informações pessoais (email, senha)
+  const [isPersonalInfoModalOpen, setIsPersonalInfoModalOpen] = useState(false);
+  const [isEditingPersonalInfo, setIsEditingPersonalInfo] = useState(false);
+  const [personalInfoForm, setPersonalInfoForm] = useState({
     email: '',
     newPassword: '',
     currentPassword: ''
   });
-  const [saving, setSaving] = useState(false);
-  const [avatarFile, setAvatarFile] = useState<File | null>(null);
-  const [avatarPreview, setAvatarPreview] = useState<string>('');
-  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [savingPersonalInfo, setSavingPersonalInfo] = useState(false);
 
   useEffect(() => {
     // Set up auth state listener
@@ -182,19 +191,26 @@ const ProfilePage = () => {
   };
 
   const handleEditProfile = () => {
-    // Carrega os dados atuais no formulário
+    // Carrega os dados atuais no formulário de editar perfil
     setEditForm({
       display_name: profile?.display_name || '',
       bio: profile?.bio || '',
-      avatar_url: profile?.avatar_url || '',
+      avatar_url: profile?.avatar_url || ''
+    });
+    setAvatarPreview(profile?.avatar_url || '');
+    setAvatarFile(null);
+    setIsEditModalOpen(true);
+  };
+
+  const handlePersonalInfo = () => {
+    // Carrega os dados atuais no formulário de informações pessoais
+    setPersonalInfoForm({
       email: user?.email || '',
       newPassword: '',
       currentPassword: ''
     });
-    setAvatarPreview(profile?.avatar_url || '');
-    setAvatarFile(null);
-    setShowCurrentPassword(false);
-    setIsEditModalOpen(true);
+    setIsEditingPersonalInfo(false);
+    setIsPersonalInfoModalOpen(true);
   };
 
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -239,7 +255,7 @@ const ProfilePage = () => {
   const handleSaveProfile = async () => {
     if (!user) return;
 
-    setSaving(true);
+    setSavingProfile(true);
     try {
       let avatarUrl = editForm.avatar_url;
       
@@ -251,72 +267,6 @@ const ProfilePage = () => {
         }
       }
 
-      // Verifica se há mudanças no email ou senha
-      const emailChanged = editForm.email !== user.email;
-      const passwordChanged = editForm.newPassword.trim() !== '';
-
-      if (emailChanged || passwordChanged) {
-        if (!editForm.currentPassword) {
-          toast({
-            title: "Senha necessária",
-            description: "Para alterar email ou senha, confirme sua senha atual.",
-            variant: "destructive",
-          });
-          setSaving(false);
-          return;
-        }
-
-        // Verifica a senha atual
-        const { error: signInError } = await supabase.auth.signInWithPassword({
-          email: user.email!,
-          password: editForm.currentPassword
-        });
-
-        if (signInError) {
-          toast({
-            title: "Senha incorreta",
-            description: "A senha atual está incorreta.",
-            variant: "destructive",
-          });
-          setSaving(false);
-          return;
-        }
-
-        // Atualiza email se mudou
-        if (emailChanged) {
-          const { error: emailError } = await supabase.auth.updateUser({
-            email: editForm.email
-          });
-
-          if (emailError) {
-            toast({
-              title: "Erro ao atualizar email",
-              description: emailError.message,
-              variant: "destructive",
-            });
-            setSaving(false);
-            return;
-          }
-        }
-
-        // Atualiza senha se mudou
-        if (passwordChanged) {
-          const { error: passwordError } = await supabase.auth.updateUser({
-            password: editForm.newPassword
-          });
-
-          if (passwordError) {
-            toast({
-              title: "Erro ao atualizar senha",
-              description: passwordError.message,
-              variant: "destructive",
-            });
-            setSaving(false);
-            return;
-          }
-        }
-      }
-
       // Atualiza o perfil na tabela profiles
       const { error } = await (supabase as any)
         .from('profiles')
@@ -325,7 +275,7 @@ const ProfilePage = () => {
           display_name: editForm.display_name,
           bio: editForm.bio,
           avatar_url: avatarUrl,
-          email: emailChanged ? editForm.email : user.email
+          email: user.email
         });
 
       if (error) {
@@ -337,9 +287,7 @@ const ProfilePage = () => {
       } else {
         toast({
           title: "Perfil atualizado!",
-          description: emailChanged || passwordChanged ? 
-            "Suas alterações foram salvas. Você pode precisar fazer login novamente." :
-            "Suas alterações foram salvas com sucesso.",
+          description: "Suas alterações foram salvas com sucesso.",
         });
         
         // Recarrega o perfil
@@ -347,14 +295,6 @@ const ProfilePage = () => {
         setIsEditModalOpen(false);
         setAvatarFile(null);
         setAvatarPreview('');
-        setShowCurrentPassword(false);
-
-        // Se mudou email ou senha, faz logout para reautenticação
-        if (emailChanged || passwordChanged) {
-          setTimeout(() => {
-            handleLogout();
-          }, 2000);
-        }
       }
     } catch (error) {
       console.error('Error saving profile:', error);
@@ -364,7 +304,118 @@ const ProfilePage = () => {
         variant: "destructive",
       });
     } finally {
-      setSaving(false);
+      setSavingProfile(false);
+    }
+  };
+
+  const handleSavePersonalInfo = async () => {
+    if (!user) return;
+
+    setSavingPersonalInfo(true);
+    try {
+      // Verifica se há mudanças no email ou senha
+      const emailChanged = personalInfoForm.email !== user.email;
+      const passwordChanged = personalInfoForm.newPassword.trim() !== '';
+
+      if (emailChanged || passwordChanged) {
+        if (!personalInfoForm.currentPassword) {
+          toast({
+            title: "Senha necessária",
+            description: "Para alterar email ou senha, confirme sua senha atual.",
+            variant: "destructive",
+          });
+          setSavingPersonalInfo(false);
+          return;
+        }
+
+        // Verifica a senha atual
+        const { error: signInError } = await supabase.auth.signInWithPassword({
+          email: user.email!,
+          password: personalInfoForm.currentPassword
+        });
+
+        if (signInError) {
+          toast({
+            title: "Senha incorreta",
+            description: "A senha atual está incorreta.",
+            variant: "destructive",
+          });
+          setSavingPersonalInfo(false);
+          return;
+        }
+
+        // Atualiza email se mudou
+        if (emailChanged) {
+          const { error: emailError } = await supabase.auth.updateUser({
+            email: personalInfoForm.email
+          });
+
+          if (emailError) {
+            toast({
+              title: "Erro ao atualizar email",
+              description: emailError.message,
+              variant: "destructive",
+            });
+            setSavingPersonalInfo(false);
+            return;
+          }
+        }
+
+        // Atualiza senha se mudou
+        if (passwordChanged) {
+          const { error: passwordError } = await supabase.auth.updateUser({
+            password: personalInfoForm.newPassword
+          });
+
+          if (passwordError) {
+            toast({
+              title: "Erro ao atualizar senha",
+              description: passwordError.message,
+              variant: "destructive",
+            });
+            setSavingPersonalInfo(false);
+            return;
+          }
+        }
+
+        // Atualiza o email na tabela profiles se mudou
+        if (emailChanged) {
+          const { error } = await (supabase as any)
+            .from('profiles')
+            .update({
+              email: personalInfoForm.email
+            })
+            .eq('id', user.id);
+
+          if (error) {
+            console.error('Error updating profile email:', error);
+          }
+        }
+
+        toast({
+          title: "Informações atualizadas!",
+          description: "Suas alterações foram salvas. Você pode precisar fazer login novamente.",
+        });
+        
+        // Recarrega o perfil
+        await fetchProfile(user.id);
+        setIsPersonalInfoModalOpen(false);
+        setIsEditingPersonalInfo(false);
+
+        // Se mudou email ou senha, faz logout para reautenticação
+        setTimeout(() => {
+          handleLogout();
+        }, 2000);
+      }
+    } catch (error) {
+      console.error('Error saving personal info:', error);
+      toast({
+        title: "Erro ao salvar",
+        description: "Ocorreu um erro inesperado.",
+        variant: "destructive",
+      });
+    } finally {
+      setSavingPersonalInfo(false);
     }
   };
 
@@ -373,17 +424,36 @@ const ProfilePage = () => {
     setEditForm({
       display_name: '',
       bio: '',
-      avatar_url: '',
+      avatar_url: ''
+    });
+  };
+
+  const handleCancelPersonalInfo = () => {
+    setIsPersonalInfoModalOpen(false);
+    setIsEditingPersonalInfo(false);
+    setPersonalInfoForm({
       email: '',
       newPassword: '',
       currentPassword: ''
     });
-    setShowCurrentPassword(false);
+  };
+
+  const handleBackPersonalInfo = () => {
+    setIsEditingPersonalInfo(false);
+    setPersonalInfoForm({
+      email: user?.email || '',
+      newPassword: '',
+      currentPassword: ''
+    });
   };
 
   const handleConfigAction = (action: string) => {
     if (action === 'logout') {
       handleLogout();
+    } else if (action === 'edit-profile') {
+      handleEditProfile();
+    } else if (action === 'personal-info') {
+      handlePersonalInfo();
     } else {
       // TODO: Implementar outras ações de configuração
       console.log("Config action:", action);
@@ -641,53 +711,60 @@ const ProfilePage = () => {
               />
             </div>
 
+          </div>
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={handleCancelEdit} disabled={savingProfile}>
+              Cancelar
+            </Button>
+            <Button onClick={handleSaveProfile} disabled={savingProfile}>
+              {savingProfile ? "Salvando..." : "Salvar"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal de Informações Pessoais */}
+      <Dialog open={isPersonalInfoModalOpen} onOpenChange={setIsPersonalInfoModalOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Informações Pessoais</DialogTitle>
+          </DialogHeader>
+          
+          <div className="grid gap-4 py-4">
             <div className="grid gap-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="personal_email">Email</Label>
               <Input
-                id="email"
+                id="personal_email"
                 type="email"
-                value={editForm.email}
-                onChange={(e) => {
-                  setEditForm(prev => ({ ...prev, email: e.target.value }));
-                  // Mostra campo de senha atual se mudou email
-                  if (e.target.value !== user?.email) {
-                    setShowCurrentPassword(true);
-                  } else if (editForm.newPassword === '') {
-                    setShowCurrentPassword(false);
-                  }
-                }}
+                value={personalInfoForm.email}
+                onChange={(e) => setPersonalInfoForm(prev => ({ ...prev, email: e.target.value }))}
                 placeholder="Seu email"
+                disabled={!isEditingPersonalInfo}
               />
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="newPassword">Nova Senha</Label>
+              <Label htmlFor="personal_password">Nova Senha</Label>
               <Input
-                id="newPassword"
+                id="personal_password"
                 type="password"
-                value={editForm.newPassword}
-                onChange={(e) => {
-                  setEditForm(prev => ({ ...prev, newPassword: e.target.value }));
-                  // Mostra campo de senha atual se definiu nova senha
-                  if (e.target.value !== '') {
-                    setShowCurrentPassword(true);
-                  } else if (editForm.email === user?.email) {
-                    setShowCurrentPassword(false);
-                  }
-                }}
-                placeholder="Digite uma nova senha (opcional)"
+                value={personalInfoForm.newPassword}
+                onChange={(e) => setPersonalInfoForm(prev => ({ ...prev, newPassword: e.target.value }))}
+                placeholder="Digite uma nova senha"
+                disabled={!isEditingPersonalInfo}
               />
             </div>
 
-            {/* Campo de senha atual - só aparece quando necessário */}
-            {showCurrentPassword && (
+            {/* Campo de senha atual - só aparece quando está editando */}
+            {isEditingPersonalInfo && (
               <div className="grid gap-2">
-                <Label htmlFor="currentPassword">Senha Atual</Label>
+                <Label htmlFor="current_password">Senha Atual</Label>
                 <Input
-                  id="currentPassword"
+                  id="current_password"
                   type="password"
-                  value={editForm.currentPassword}
-                  onChange={(e) => setEditForm(prev => ({ ...prev, currentPassword: e.target.value }))}
+                  value={personalInfoForm.currentPassword}
+                  onChange={(e) => setPersonalInfoForm(prev => ({ ...prev, currentPassword: e.target.value }))}
                   placeholder="Digite sua senha atual para confirmar"
                 />
               </div>
@@ -695,12 +772,25 @@ const ProfilePage = () => {
           </div>
           
           <DialogFooter>
-            <Button variant="outline" onClick={handleCancelEdit} disabled={saving}>
-              Cancelar
-            </Button>
-            <Button onClick={handleSaveProfile} disabled={saving}>
-              {saving ? "Salvando..." : "Salvar"}
-            </Button>
+            {!isEditingPersonalInfo ? (
+              <>
+                <Button variant="outline" onClick={handleCancelPersonalInfo}>
+                  Cancelar
+                </Button>
+                <Button onClick={() => setIsEditingPersonalInfo(true)}>
+                  Editar
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button variant="outline" onClick={handleBackPersonalInfo}>
+                  Voltar
+                </Button>
+                <Button onClick={handleSavePersonalInfo} disabled={savingPersonalInfo}>
+                  {savingPersonalInfo ? "Salvando..." : "Salvar"}
+                </Button>
+              </>
+            )}
           </DialogFooter>
         </DialogContent>
       </Dialog>
