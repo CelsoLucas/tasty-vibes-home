@@ -19,9 +19,9 @@ export const BottomNavigation = () => {
       <div className="relative bg-white/80 dark:bg-gray-900/80 backdrop-blur-lg border border-white/20 dark:border-gray-700/20 rounded-3xl px-8 py-4 shadow-lg shadow-gray-900/10">
         {/* Bubble indicator */}
         <div 
-          className="absolute top-2 w-12 h-12 bg-gradient-to-r from-orange-500 to-orange-600 rounded-full transition-transform duration-500 ease-out-back shadow-lg shadow-orange-500/25"
+          className="absolute top-2 w-12 h-12 bg-gradient-to-r from-orange-500 to-orange-600 rounded-full shadow-lg shadow-orange-500/25 transition-all duration-300 ease-in-out"
           style={{
-            transform: `translateX(${activeIndex * 64 - 4}px)`,
+            left: `${activeIndex * 64 + 20}px`,
           }}
         />
         
