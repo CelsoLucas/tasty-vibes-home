@@ -5,6 +5,9 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { AppHeader } from "@/components/AppHeader";
 import { BottomNavigation } from "@/components/BottomNavigation";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 import { 
   User, 
   Edit3, 
@@ -74,6 +77,36 @@ const configOptions = [
 ];
 
 const ProfilePage = () => {
+  const navigate = useNavigate();
+  const { toast } = useToast();
+
+  const handleLogout = async () => {
+    try {
+      const { error } = await supabase.auth.signOut();
+      
+      if (error) {
+        toast({
+          title: "Erro ao sair",
+          description: error.message,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      toast({
+        title: "Logout realizado com sucesso!",
+        description: "Até a próxima!",
+      });
+      
+      navigate('/login');
+    } catch (error) {
+      toast({
+        title: "Erro ao sair",
+        description: "Ocorreu um erro inesperado. Tente novamente.",
+        variant: "destructive",
+      });
+    }
+  };
   const [user] = useState(mockUser);
   const [reviews] = useState(mockReviews);
 
@@ -83,8 +116,12 @@ const ProfilePage = () => {
   };
 
   const handleConfigAction = (action: string) => {
-    // TODO: Implementar ações de configuração
-    console.log("Config action:", action);
+    if (action === 'logout') {
+      handleLogout();
+    } else {
+      // TODO: Implementar outras ações de configuração
+      console.log("Config action:", action);
+    }
   };
 
   const handleEditReview = (reviewId: number) => {
