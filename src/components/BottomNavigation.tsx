@@ -16,12 +16,12 @@ export const BottomNavigation = () => {
 
   return (
     <nav className="fixed bottom-4 left-4 right-4 z-50 flex justify-center">
-      <div className="relative bg-white/80 dark:bg-gray-900/80 backdrop-blur-lg border border-white/20 dark:border-gray-700/20 rounded-3xl px-8 py-4 shadow-lg shadow-gray-900/10">
+      <div className="relative bg-white/10 dark:bg-gray-900/10 backdrop-blur-xl border border-white/30 dark:border-gray-700/30 rounded-3xl px-8 py-4 shadow-2xl shadow-black/20">
         {/* Bubble indicator */}
         <div 
           className="absolute top-2 w-12 h-12 bg-gradient-to-r from-orange-500 to-orange-600 rounded-full transition-transform duration-500 ease-out-back shadow-lg shadow-orange-500/25"
           style={{
-            transform: `translateX(${activeIndex * 64 - 4}px)`,
+            transform: `translateX(${activeIndex * 64 + 8}px)`,
           }}
         />
         
@@ -39,13 +39,13 @@ export const BottomNavigation = () => {
               >
                 {/* Icon */}
                 <div className={`flex items-center justify-center w-10 h-10 transition-all duration-300 ease-out-back ${
-                  isActive ? '-translate-y-1' : ''
+                  isActive ? '-translate-y-2' : ''
                 }`}>
                   <IconComponent 
                     className={`transition-all duration-300 ease-out-back ${
                       isActive 
                         ? 'w-7 h-7 text-white scale-125' 
-                        : 'w-5 h-5 text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-300 group-hover:scale-105'
+                        : 'w-5 h-5 text-gray-600 dark:text-gray-300 group-hover:text-gray-800 dark:group-hover:text-white group-hover:scale-105'
                     }`}
                   />
                 </div>
