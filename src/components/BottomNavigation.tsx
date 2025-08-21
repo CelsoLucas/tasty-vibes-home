@@ -36,11 +36,11 @@ export const BottomNavigation = () => {
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
                   className={`relative flex flex-col items-center group ${
-                    isActive ? 'justify-start w-10 h-16' : 'justify-center w-10 h-10'
+                    isActive ? 'justify-center w-10 h-16' : 'justify-center w-10 h-10'
                   }`}
                 >
                   {/* Icon */}
-                  <div className="flex items-center justify-center w-10 h-10">
+                  <div className={`flex items-center justify-center w-10 h-10 ${isActive ? 'mt-1' : ''}`}>
                     <IconComponent 
                       className={`transition-all duration-200 ${
                         isActive 
