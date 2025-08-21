@@ -1,5 +1,4 @@
 import { AppHeader } from "@/components/AppHeader";
-import { SearchBar } from "@/components/SearchBar";
 import { RestaurantSection } from "@/components/RestaurantSection";
 import { BottomNavigation } from "@/components/BottomNavigation";
 
@@ -50,9 +49,8 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background pb-20">
       <AppHeader />
-      <SearchBar />
       
-      <main className="space-y-6 pb-4">
+      <main className="space-y-6 pt-4 pb-4">
         <RestaurantSection title="Melhores da Cidade" restaurants={bestInCity} />
         <RestaurantSection title="Melhores da Região" restaurants={bestInRegion} />
         <RestaurantSection title="Para Você" restaurants={forYou} />

@@ -18,7 +18,7 @@ export const RestaurantSection = ({ title, restaurants }: RestaurantSectionProps
     <div className="space-y-4">
       <h2 className="text-xl font-bold text-foreground px-4">{title}</h2>
       <ScrollArea className="w-full whitespace-nowrap">
-        <div className="flex gap-4 px-4">
+        <div className="flex gap-4 px-4 pr-8">
           {restaurants.map((restaurant) => (
             <RestaurantCard key={restaurant.id} {...restaurant} />
           ))}
