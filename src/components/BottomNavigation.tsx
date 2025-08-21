@@ -38,11 +38,13 @@ export const BottomNavigation = () => {
                 className="relative flex flex-col items-center justify-start w-10 h-16 transition-all duration-300 ease-out-back group"
               >
                 {/* Icon */}
-                <div className="flex items-center justify-center w-10 h-10">
+                <div className={`flex items-center justify-center w-10 h-10 transition-all duration-300 ease-out-back ${
+                  isActive ? '-translate-y-1' : ''
+                }`}>
                   <IconComponent 
                     className={`transition-all duration-300 ease-out-back ${
                       isActive 
-                        ? 'w-6 h-6 text-white scale-110' 
+                        ? 'w-7 h-7 text-white scale-125' 
                         : 'w-5 h-5 text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-300 group-hover:scale-105'
                     }`}
                   />
