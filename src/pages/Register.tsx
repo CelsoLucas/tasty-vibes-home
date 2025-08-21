@@ -18,18 +18,84 @@ const Register = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [emailError, setEmailError] = useState("");
+  const [confirmPasswordError, setConfirmPasswordError] = useState("");
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  // Função para verificar se o email já está cadastrado
+  const checkEmailAlreadyExists = async (email: string) => {
+    if (!email) return false;
+    
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password: 'invalid_password_check_123',
+      });
+      
+      // Se o erro for de credenciais inválidas ou email não confirmado, significa que o email já existe
+      if (error?.message.includes('Invalid login credentials') || 
+          error?.message.includes('Email not confirmed')) {
+        return true;
+      }
+      
+      return false;
+    } catch {
+      return false;
+    }
+  };
+
+  // Validação do email em tempo real
+  const handleEmailChange = async (value: string) => {
+    setFormData(prev => ({ ...prev, email: value }));
+    setEmailError("");
+    
+    if (value && value.includes('@')) {
+      const emailExists = await checkEmailAlreadyExists(value);
+      if (emailExists) {
+        setEmailError("Este email já está cadastrado");
+      }
+    }
+  };
+
+  // Validação da confirmação de senha
+  const handleConfirmPasswordChange = (value: string) => {
+    setFormData(prev => ({ ...prev, confirmPassword: value }));
+    setConfirmPasswordError("");
+    
+    if (value && formData.password && value !== formData.password) {
+      setConfirmPasswordError("As senhas não coincidem");
+    }
+  };
+
+  // Validação da senha
+  const handlePasswordChange = (value: string) => {
+    setFormData(prev => ({ ...prev, password: value }));
+    
+    // Re-valida confirmação de senha se já foi preenchida
+    if (formData.confirmPassword) {
+      if (formData.confirmPassword !== value) {
+        setConfirmPasswordError("As senhas não coincidem");
+      } else {
+        setConfirmPasswordError("");
+      }
+    }
+  };
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Limpar erros antes de validar
+    setEmailError("");
+    setConfirmPasswordError("");
+    
+    // Verificar se há erros de validação antes de prosseguir
+    if (emailError || confirmPasswordError) {
+      return;
+    }
+    
     if (formData.password !== formData.confirmPassword) {
-      toast({
-        title: "Erro no cadastro",
-        description: "As senhas não coincidem.",
-        variant: "destructive",
-      });
+      setConfirmPasswordError("As senhas não coincidem");
       return;
     }
 
@@ -160,11 +226,16 @@ const Register = () => {
                     type="email"
                     placeholder="seu@email.com"
                     value={formData.email}
-                    onChange={(e) => handleInputChange("email", e.target.value)}
-                    className="pl-10 transition-all duration-200 focus:ring-2 focus:ring-primary/20"
+                    onChange={(e) => handleEmailChange(e.target.value)}
+                    className={`pl-10 transition-all duration-200 focus:ring-2 focus:ring-primary/20 ${
+                      emailError ? 'border-red-500' : ''
+                    }`}
                     required
                   />
                 </div>
+                {emailError && (
+                  <p className="text-sm text-red-500 mt-1">{emailError}</p>
+                )}
               </div>
 
               {/* Password Field */}
@@ -179,7 +250,7 @@ const Register = () => {
                     type={showPassword ? "text" : "password"}
                     placeholder="••••••••"
                     value={formData.password}
-                    onChange={(e) => handleInputChange("password", e.target.value)}
+                    onChange={(e) => handlePasswordChange(e.target.value)}
                     className="pl-10 pr-10 transition-all duration-200 focus:ring-2 focus:ring-primary/20"
                     required
                   />
@@ -205,8 +276,10 @@ const Register = () => {
                     type={showConfirmPassword ? "text" : "password"}
                     placeholder="••••••••"
                     value={formData.confirmPassword}
-                    onChange={(e) => handleInputChange("confirmPassword", e.target.value)}
-                    className="pl-10 pr-10 transition-all duration-200 focus:ring-2 focus:ring-primary/20"
+                    onChange={(e) => handleConfirmPasswordChange(e.target.value)}
+                    className={`pl-10 pr-10 transition-all duration-200 focus:ring-2 focus:ring-primary/20 ${
+                      confirmPasswordError ? 'border-red-500' : ''
+                    }`}
                     required
                   />
                   <button
@@ -217,6 +290,9 @@ const Register = () => {
                     {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
                 </div>
+                {confirmPasswordError && (
+                  <p className="text-sm text-red-500 mt-1">{confirmPasswordError}</p>
+                )}
               </div>
 
               {/* Register Button */}

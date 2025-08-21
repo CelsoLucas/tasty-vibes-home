@@ -13,12 +13,63 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [emailError, setEmailError] = useState("");
+  const [passwordError, setPasswordError] = useState("");
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  // Função para verificar se o email existe
+  const checkEmailExists = async (email: string) => {
+    if (!email) return false;
+    
+    try {
+      // Tentativa de login com uma senha inválida para verificar se o email existe
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password: 'invalid_password_check_123',
+      });
+      
+      // Se o erro for de senha incorreta, significa que o email existe
+      if (error?.message.includes('Invalid login credentials')) {
+        return true;
+      }
+      
+      // Se o erro for outro, verificamos se é relacionado ao email não encontrado
+      if (error?.message.includes('Email not confirmed') || 
+          error?.message.includes('Invalid login credentials')) {
+        return true;
+      }
+      
+      return false;
+    } catch {
+      return false;
+    }
+  };
+
+  // Validação do email em tempo real
+  const handleEmailChange = async (value: string) => {
+    setEmail(value);
+    setEmailError("");
+    
+    if (value && value.includes('@')) {
+      const emailExists = await checkEmailExists(value);
+      if (!emailExists) {
+        setEmailError("Este email não está cadastrado");
+      }
+    }
+  };
+
+  // Validação da senha
+  const handlePasswordChange = (value: string) => {
+    setPassword(value);
+    setPasswordError("");
+  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setEmailError("");
+    setPasswordError("");
 
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
@@ -27,11 +78,24 @@ const Login = () => {
       });
 
       if (error) {
-        toast({
-          title: "Erro no login",
-          description: error.message,
-          variant: "destructive",
-        });
+        // Verificar tipo específico de erro
+        if (error.message.includes('Invalid login credentials')) {
+          // Verificar se o email existe para determinar se o erro é do email ou senha
+          const emailExists = await checkEmailExists(email);
+          if (!emailExists) {
+            setEmailError("Este email não está cadastrado");
+          } else {
+            setPasswordError("Senha incorreta");
+          }
+        } else if (error.message.includes('Email not confirmed')) {
+          setEmailError("Por favor, confirme seu email antes de fazer login");
+        } else {
+          toast({
+            title: "Erro no login",
+            description: error.message,
+            variant: "destructive",
+          });
+        }
         return;
       }
 
@@ -107,11 +171,16 @@ const Login = () => {
                     type="email"
                     placeholder="seu@email.com"
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="pl-10 transition-all duration-200 focus:ring-2 focus:ring-primary/20"
+                    onChange={(e) => handleEmailChange(e.target.value)}
+                    className={`pl-10 transition-all duration-200 focus:ring-2 focus:ring-primary/20 ${
+                      emailError ? 'border-red-500' : ''
+                    }`}
                     required
                   />
                 </div>
+                {emailError && (
+                  <p className="text-sm text-red-500 mt-1">{emailError}</p>
+                )}
               </div>
 
               {/* Password Field */}
@@ -126,8 +195,10 @@ const Login = () => {
                     type={showPassword ? "text" : "password"}
                     placeholder="••••••••"
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="pl-10 pr-10 transition-all duration-200 focus:ring-2 focus:ring-primary/20"
+                    onChange={(e) => handlePasswordChange(e.target.value)}
+                    className={`pl-10 pr-10 transition-all duration-200 focus:ring-2 focus:ring-primary/20 ${
+                      passwordError ? 'border-red-500' : ''
+                    }`}
                     required
                   />
                   <button
@@ -138,6 +209,9 @@ const Login = () => {
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
                 </div>
+                {passwordError && (
+                  <p className="text-sm text-red-500 mt-1">{passwordError}</p>
+                )}
               </div>
 
               {/* Login Button */}
