@@ -188,9 +188,9 @@ const ProfilePage = () => {
         <Card>
           <CardContent className="p-6">
             <h3 className="text-lg font-semibold text-foreground mb-4">Minhas Avaliações</h3>
-            <div className="space-y-4">
+            <div className="flex gap-4 overflow-x-auto scrollbar-hide pb-2">
               {reviews.map((review) => (
-                <div key={review.id} className="border border-border rounded-lg p-4">
+                <div key={review.id} className="flex-shrink-0 w-80 border border-border rounded-lg p-4">
                   <div className="flex justify-between items-start mb-3">
                     <div>
                       <h4 className="font-medium text-foreground">{review.restaurant}</h4>
