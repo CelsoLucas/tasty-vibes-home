@@ -29,7 +29,9 @@ import {
   Trash2,
   MoreHorizontal,
   Camera,
-  Upload
+  Upload,
+  Eye,
+  EyeOff
 } from "lucide-react";
 
 // Mock user data
@@ -109,6 +111,10 @@ const ProfilePage = () => {
     currentPassword: ''
   });
   const [savingPersonalInfo, setSavingPersonalInfo] = useState(false);
+  
+  // Estados para controlar visibilidade das senhas
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
 
   useEffect(() => {
     // Set up auth state listener
@@ -747,26 +753,60 @@ const ProfilePage = () => {
 
             <div className="grid gap-2">
               <Label htmlFor="personal_password">Nova Senha</Label>
-              <Input
-                id="personal_password"
-                type="password"
-                value={personalInfoForm.newPassword}
-                onChange={(e) => setPersonalInfoForm(prev => ({ ...prev, newPassword: e.target.value }))}
-                placeholder="Digite uma nova senha"
-                disabled={!isEditingPersonalInfo}
-              />
+              <div className="relative">
+                <Input
+                  id="personal_password"
+                  type={showNewPassword ? "text" : "password"}
+                  value={personalInfoForm.newPassword}
+                  onChange={(e) => setPersonalInfoForm(prev => ({ ...prev, newPassword: e.target.value }))}
+                  placeholder="Digite uma nova senha"
+                  disabled={!isEditingPersonalInfo}
+                  className="pr-10"
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                  onClick={() => setShowNewPassword(!showNewPassword)}
+                  disabled={!isEditingPersonalInfo}
+                >
+                  {showNewPassword ? (
+                    <EyeOff className="h-4 w-4 text-muted-foreground" />
+                  ) : (
+                    <Eye className="h-4 w-4 text-muted-foreground" />
+                  )}
+                </Button>
+              </div>
             </div>
 
             <div className="grid gap-2">
               <Label htmlFor="current_password">Senha Atual</Label>
-              <Input
-                id="current_password"
-                type="password"
-                value={personalInfoForm.currentPassword}
-                onChange={(e) => setPersonalInfoForm(prev => ({ ...prev, currentPassword: e.target.value }))}
-                placeholder="Digite sua senha atual"
-                disabled={!isEditingPersonalInfo}
-              />
+              <div className="relative">
+                <Input
+                  id="current_password"
+                  type={showCurrentPassword ? "text" : "password"}
+                  value={personalInfoForm.currentPassword}
+                  onChange={(e) => setPersonalInfoForm(prev => ({ ...prev, currentPassword: e.target.value }))}
+                  placeholder="Digite sua senha atual"
+                  disabled={!isEditingPersonalInfo}
+                  className="pr-10"
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                  onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                  disabled={!isEditingPersonalInfo}
+                >
+                  {showCurrentPassword ? (
+                    <EyeOff className="h-4 w-4 text-muted-foreground" />
+                  ) : (
+                    <Eye className="h-4 w-4 text-muted-foreground" />
+                  )}
+                </Button>
+              </div>
             </div>
           </div>
           
