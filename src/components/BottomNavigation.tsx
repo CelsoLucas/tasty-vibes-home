@@ -2,10 +2,10 @@ import { Home, Search, Plus, User } from "lucide-react";
 import { useState } from "react";
 
 const tabs = [
-  { id: 'home', icon: Home, label: 'Home' },
-  { id: 'search', icon: Search, label: 'Search' },
-  { id: 'add', icon: Plus, label: 'Add' },
-  { id: 'profile', icon: User, label: 'Profile' }
+  { id: 'home', icon: Home, label: 'Início' },
+  { id: 'search', icon: Search, label: 'Buscar' },
+  { id: 'add', icon: Plus, label: 'Adicionar' },
+  { id: 'profile', icon: User, label: 'Perfil' }
 ];
 
 export const BottomNavigation = () => {
