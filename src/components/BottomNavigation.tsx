@@ -44,7 +44,7 @@ export const BottomNavigation = () => {
                     <IconComponent 
                       className={`transition-all duration-200 ${
                         isActive 
-                          ? 'w-7 h-7 text-white' 
+                          ? 'w-8 h-8 text-white' 
                           : 'w-5 h-5 text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-300'
                       }`}
                     />
