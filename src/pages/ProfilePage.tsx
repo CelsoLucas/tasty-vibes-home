@@ -3,6 +3,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import { AppHeader } from "@/components/AppHeader";
 import { BottomNavigation } from "@/components/BottomNavigation";
 import { useNavigate } from "react-router-dom";
@@ -84,6 +88,13 @@ const ProfilePage = () => {
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [reviews] = useState(mockReviews);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editForm, setEditForm] = useState({
+    display_name: '',
+    bio: '',
+    avatar_url: ''
+  });
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     // Set up auth state listener
@@ -167,8 +178,65 @@ const ProfilePage = () => {
   };
 
   const handleEditProfile = () => {
-    // TODO: Implementar edição de perfil
-    console.log("Edit profile");
+    // Carrega os dados atuais no formulário
+    setEditForm({
+      display_name: profile?.display_name || '',
+      bio: profile?.bio || '',
+      avatar_url: profile?.avatar_url || ''
+    });
+    setIsEditModalOpen(true);
+  };
+
+  const handleSaveProfile = async () => {
+    if (!user) return;
+
+    setSaving(true);
+    try {
+      const { error } = await (supabase as any)
+        .from('profiles')
+        .upsert({
+          id: user.id,
+          display_name: editForm.display_name,
+          bio: editForm.bio,
+          avatar_url: editForm.avatar_url,
+          email: user.email
+        });
+
+      if (error) {
+        toast({
+          title: "Erro ao salvar",
+          description: "Não foi possível salvar as alterações.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Perfil atualizado!",
+          description: "Suas alterações foram salvas com sucesso.",
+        });
+        
+        // Recarrega o perfil
+        await fetchProfile(user.id);
+        setIsEditModalOpen(false);
+      }
+    } catch (error) {
+      console.error('Error saving profile:', error);
+      toast({
+        title: "Erro ao salvar",
+        description: "Ocorreu um erro inesperado.",
+        variant: "destructive",
+      });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditModalOpen(false);
+    setEditForm({
+      display_name: '',
+      bio: '',
+      avatar_url: ''
+    });
   };
 
   const handleConfigAction = (action: string) => {
@@ -385,6 +453,57 @@ const ProfilePage = () => {
 
       {/* Menu inferior */}
       <BottomNavigation />
+
+      {/* Modal de Edição de Perfil */}
+      <Dialog open={isEditModalOpen} onOpenChange={setIsEditModalOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Editar Perfil</DialogTitle>
+          </DialogHeader>
+          
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="display_name">Nome de Exibição</Label>
+              <Input
+                id="display_name"
+                value={editForm.display_name}
+                onChange={(e) => setEditForm(prev => ({ ...prev, display_name: e.target.value }))}
+                placeholder="Seu nome de exibição"
+              />
+            </div>
+            
+            <div className="grid gap-2">
+              <Label htmlFor="bio">Bio</Label>
+              <Textarea
+                id="bio"
+                value={editForm.bio}
+                onChange={(e) => setEditForm(prev => ({ ...prev, bio: e.target.value }))}
+                placeholder="Conte um pouco sobre você..."
+                rows={3}
+              />
+            </div>
+            
+            <div className="grid gap-2">
+              <Label htmlFor="avatar_url">URL do Avatar</Label>
+              <Input
+                id="avatar_url"
+                value={editForm.avatar_url}
+                onChange={(e) => setEditForm(prev => ({ ...prev, avatar_url: e.target.value }))}
+                placeholder="https://..."
+              />
+            </div>
+          </div>
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={handleCancelEdit} disabled={saving}>
+              Cancelar
+            </Button>
+            <Button onClick={handleSaveProfile} disabled={saving}>
+              {saving ? "Salvando..." : "Salvar"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
