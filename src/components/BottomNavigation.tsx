@@ -21,7 +21,7 @@ export const BottomNavigation = () => {
         <div 
           className="absolute top-2 w-12 h-12 bg-gradient-to-r from-orange-500 to-orange-600 rounded-full transition-transform duration-500 ease-out-back shadow-lg shadow-orange-500/25"
           style={{
-            transform: `translateX(${activeIndex * 68 + 8}px)`,
+            transform: `translateX(${activeIndex * 64 - 4}px)`,
           }}
         />
         
