@@ -1,15 +1,25 @@
 import { Home, Search, Plus, User } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 
 const tabs = [
-  { id: 'home', icon: Home, label: 'Início' },
-  { id: 'search', icon: Search, label: 'Buscar' },
-  { id: 'add', icon: Plus, label: 'Adicionar' },
-  { id: 'profile', icon: User, label: 'Perfil' }
+  { id: 'home', icon: Home, label: 'Início', path: '/' },
+  { id: 'search', icon: Search, label: 'Buscar', path: '/search' },
+  { id: 'add', icon: Plus, label: 'Adicionar', path: '/add' },
+  { id: 'profile', icon: User, label: 'Perfil', path: '/profile' }
 ];
 
 export const BottomNavigation = () => {
+  const location = useLocation();
   const [activeTab, setActiveTab] = useState('home');
+
+  // Update active tab based on current route
+  useEffect(() => {
+    const currentTab = tabs.find(tab => tab.path === location.pathname);
+    if (currentTab) {
+      setActiveTab(currentTab.id);
+    }
+  }, [location.pathname]);
 
   const getTabIndex = (tabId: string) => tabs.findIndex(tab => tab.id === tabId);
   const activeIndex = getTabIndex(activeTab);
@@ -34,7 +44,13 @@ export const BottomNavigation = () => {
             return (
                 <button
                   key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
+                  onClick={() => {
+                    setActiveTab(tab.id);
+                    // Navigate to the corresponding route
+                    if (tab.path) {
+                      window.location.href = tab.path;
+                    }
+                  }}
                   className={`relative flex flex-col items-center group ${
                     isActive ? 'justify-start w-10 h-16' : 'justify-center w-10 h-10'
                   }`}

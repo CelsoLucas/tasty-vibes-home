@@ -3,8 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Search, Filter, MapPin, Star, Home, Plus, User } from "lucide-react";
-import { Link, useLocation } from "react-router-dom";
+import { Search, Filter, MapPin, Star } from "lucide-react";
+import { BottomNavigation } from "@/components/BottomNavigation";
 
 const categories = [
   { id: "lanches", name: "Lanches", emoji: "🍔" },
@@ -181,41 +181,6 @@ const SearchPage = () => {
 
       {/* Menu inferior fixo */}
       <BottomNavigation />
-    </div>
-  );
-};
-
-const BottomNavigation = () => {
-  const location = useLocation();
-  
-  const menuItems = [
-    { icon: Home, label: "Home", path: "/" },
-    { icon: Search, label: "Pesquisar", path: "/search" },
-    { icon: Plus, label: "Avaliar", path: "/review" },
-    { icon: User, label: "Perfil", path: "/profile" }
-  ];
-
-  return (
-    <div className="fixed bottom-0 left-0 right-0 bg-card border-t border-border">
-      <div className="flex">
-        {menuItems.map((item) => {
-          const isActive = location.pathname === item.path;
-          return (
-            <Link
-              key={item.path}
-              to={item.path}
-              className={`flex-1 flex flex-col items-center py-3 px-2 transition-colors ${
-                isActive 
-                  ? "text-primary bg-primary/10" 
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              <item.icon className={`h-5 w-5 mb-1 ${isActive ? "fill-primary/20" : ""}`} />
-              <span className="text-xs font-medium">{item.label}</span>
-            </Link>
-          );
-        })}
-      </div>
     </div>
   );
 };
