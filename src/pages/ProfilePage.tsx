@@ -383,8 +383,8 @@ const ProfilePage = () => {
               <div className="flex items-center justify-center w-10 h-10 bg-yellow-500/10 rounded-full mx-auto mb-2">
                 <Trophy className="h-5 w-5 text-yellow-500" />
               </div>
-              <p className="text-2xl font-bold text-foreground">Iniciante</p>
               <p className="text-sm text-muted-foreground">Nível</p>
+              <p className="text-2xl font-bold text-foreground">Iniciante</p>
             </CardContent>
           </Card>
 
@@ -393,8 +393,8 @@ const ProfilePage = () => {
               <div className="flex items-center justify-center w-10 h-10 bg-green-500/10 rounded-full mx-auto mb-2">
                 <MapPin className="h-5 w-5 text-green-500" />
               </div>
-              <p className="text-2xl font-bold text-foreground">0</p>
               <p className="text-sm text-muted-foreground">Restaurantes</p>
+              <p className="text-2xl font-bold text-foreground">0</p>
             </CardContent>
           </Card>
         </div>
