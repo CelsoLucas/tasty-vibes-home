@@ -12,6 +12,7 @@ import ForgotPassword from "./pages/ForgotPassword";
 import SearchPage from "./pages/SearchPage";
 import AddReviewPage from "./pages/AddReviewPage";
 import ProfilePage from "./pages/ProfilePage";
+import RestaurantProfile from "./pages/RestaurantProfile";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -33,6 +34,7 @@ const App = () => (
           <Route path="/search" element={<ProtectedRoute><SearchPage /></ProtectedRoute>} />
           <Route path="/add-review" element={<ProtectedRoute><AddReviewPage /></ProtectedRoute>} />
           <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
+          <Route path="/restaurant/:id" element={<ProtectedRoute><RestaurantProfile /></ProtectedRoute>} />
           
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
