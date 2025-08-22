@@ -1,6 +1,8 @@
 import { AppHeader } from "@/components/AppHeader";
 import { RestaurantSection } from "@/components/RestaurantSection";
 import { BottomNavigation } from "@/components/BottomNavigation";
+import { useRestaurants } from "@/hooks/useRestaurants";
+import { useMemo } from "react";
 
 // Import restaurant images
 import restaurant1 from "@/assets/restaurant-1.jpg";
@@ -10,52 +12,95 @@ import restaurant4 from "@/assets/restaurant-4.jpg";
 import restaurant5 from "@/assets/restaurant-5.jpg";
 
 const Index = () => {
-  // Dados reais de restaurantes
-  const bestInCity = [
-    { id: "1", name: "McDonald's", image: restaurant1, rating: 4.3, category: "Fast Food", distance: "0.5 km" },
-    { id: "2", name: "Outback Steakhouse", image: restaurant2, rating: 4.6, category: "Steakhouse", distance: "1.2 km" },
-    { id: "3", name: "Habib's", image: restaurant3, rating: 4.1, category: "Árabe", distance: "0.8 km" },
-    { id: "4", name: "Burger King", image: restaurant4, rating: 4.2, category: "Fast Food", distance: "2.1 km" },
-  ];
+  const { data: restaurants, isLoading, error } = useRestaurants();
 
-  const bestInRegion = [
-    { id: "5", name: "Pizza Hut", image: restaurant5, rating: 4.4, category: "Pizza", distance: "3.2 km" },
-    { id: "6", name: "Fogo de Chão", image: restaurant1, rating: 4.7, category: "Churrasco", distance: "2.8 km" },
-    { id: "7", name: "Subway", image: restaurant2, rating: 4.0, category: "Sanduíches", distance: "1.9 km" },
-    { id: "8", name: "Spoleto", image: restaurant3, rating: 4.3, category: "Italiana", distance: "4.1 km" },
-  ];
+  // Map das imagens locais
+  const imageMap = {
+    '/src/assets/restaurant-1.jpg': restaurant1,
+    '/src/assets/restaurant-2.jpg': restaurant2,
+    '/src/assets/restaurant-3.jpg': restaurant3,
+    '/src/assets/restaurant-4.jpg': restaurant4,
+    '/src/assets/restaurant-5.jpg': restaurant5,
+  };
 
-  const forYou = [
-    { id: "9", name: "Starbucks", image: restaurant4, rating: 4.5, category: "Café", distance: "0.3 km" },
-    { id: "10", name: "Bob's", image: restaurant5, rating: 3.9, category: "Fast Food", distance: "1.1 km" },
-    { id: "11", name: "Rei do Mate", image: restaurant1, rating: 4.2, category: "Bebidas", distance: "0.7 km" },
-    { id: "12", name: "Giraffas", image: restaurant2, rating: 4.0, category: "Fast Food", distance: "1.5 km" },
-  ];
+  // Transformar dados do banco para o formato esperado pelos componentes
+  const transformedRestaurants = useMemo(() => {
+    if (!restaurants) return [];
+    
+    return restaurants.map(restaurant => ({
+      id: restaurant.id,
+      name: restaurant.name,
+      image: imageMap[restaurant.image_url as keyof typeof imageMap] || restaurant1,
+      rating: restaurant.rating,
+      category: restaurant.category,
+      distance: restaurant.distance,
+    }));
+  }, [restaurants]);
 
-  const newRestaurants = [
-    { id: "13", name: "China in Box", image: restaurant3, rating: 4.1, category: "Chinesa", distance: "2.3 km" },
-    { id: "14", name: "Vivenda do Camarão", image: restaurant4, rating: 4.5, category: "Frutos do Mar", distance: "1.8 km" },
-    { id: "15", name: "Coco Bambu", image: restaurant5, rating: 4.6, category: "Frutos do Mar", distance: "3.0 km" },
-    { id: "16", name: "KFC", image: restaurant1, rating: 4.2, category: "Fast Food", distance: "0.9 km" },
-  ];
+  // Organizar restaurantes por seções
+  const restaurantSections = useMemo(() => {
+    if (transformedRestaurants.length === 0) return { bestInCity: [], bestInRegion: [], forYou: [], newRestaurants: [], topOfWeek: [] };
 
-  const topOfWeek = [
-    { id: "17", name: "Madero", image: restaurant2, rating: 4.8, category: "Hambúrgueres Gourmet", distance: "2.5 km" },
-    { id: "18", name: "Açaí da Praia", image: restaurant3, rating: 4.4, category: "Açaí", distance: "1.3 km" },
-    { id: "19", name: "Pão de Açúcar", image: restaurant4, rating: 4.3, category: "Padaria", distance: "0.6 km" },
-    { id: "20", name: "Rubaiyat", image: restaurant5, rating: 4.7, category: "Fine Dining", distance: "3.5 km" },
-  ];
+    // Dividir em grupos de 4
+    const chunkSize = 4;
+    const chunks = [];
+    for (let i = 0; i < transformedRestaurants.length; i += chunkSize) {
+      chunks.push(transformedRestaurants.slice(i, i + chunkSize));
+    }
+
+    return {
+      bestInCity: chunks[0] || [],
+      bestInRegion: chunks[1] || [],
+      forYou: chunks[2] || [],
+      newRestaurants: chunks[3] || [],
+      topOfWeek: chunks[4] || [],
+    };
+  }, [transformedRestaurants]);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background pb-20">
+        <AppHeader />
+        <main className="space-y-6 pt-4 pb-4">
+          <div className="flex items-center justify-center h-64">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+              <p className="text-muted-foreground">Carregando restaurantes...</p>
+            </div>
+          </div>
+        </main>
+        <BottomNavigation />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-background pb-20">
+        <AppHeader />
+        <main className="space-y-6 pt-4 pb-4">
+          <div className="flex items-center justify-center h-64">
+            <div className="text-center">
+              <p className="text-destructive mb-2">Erro ao carregar restaurantes</p>
+              <p className="text-muted-foreground">Tente novamente mais tarde</p>
+            </div>
+          </div>
+        </main>
+        <BottomNavigation />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background pb-20">
       <AppHeader />
       
       <main className="space-y-6 pt-4 pb-4">
-        <RestaurantSection title="Melhores da Cidade" restaurants={bestInCity} />
-        <RestaurantSection title="Melhores da Região" restaurants={bestInRegion} />
-        <RestaurantSection title="Para Você" restaurants={forYou} />
-        <RestaurantSection title="Novos Restaurantes" restaurants={newRestaurants} />
-        <RestaurantSection title="Top da Semana" restaurants={topOfWeek} />
+        <RestaurantSection title="Melhores da Cidade" restaurants={restaurantSections.bestInCity} />
+        <RestaurantSection title="Melhores da Região" restaurants={restaurantSections.bestInRegion} />
+        <RestaurantSection title="Para Você" restaurants={restaurantSections.forYou} />
+        <RestaurantSection title="Novos Restaurantes" restaurants={restaurantSections.newRestaurants} />
+        <RestaurantSection title="Top da Semana" restaurants={restaurantSections.topOfWeek} />
       </main>
       
       <BottomNavigation />

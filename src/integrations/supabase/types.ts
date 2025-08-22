@@ -44,6 +44,54 @@ export type Database = {
         }
         Relationships: []
       }
+      restaurants: {
+        Row: {
+          category: string
+          created_at: string
+          description: string | null
+          distance: string
+          id: string
+          image_url: string | null
+          location: string | null
+          name: string
+          phone: string | null
+          price_range: string | null
+          rating: number
+          updated_at: string
+          whatsapp: string | null
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          description?: string | null
+          distance: string
+          id?: string
+          image_url?: string | null
+          location?: string | null
+          name: string
+          phone?: string | null
+          price_range?: string | null
+          rating?: number
+          updated_at?: string
+          whatsapp?: string | null
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          distance?: string
+          id?: string
+          image_url?: string | null
+          location?: string | null
+          name?: string
+          phone?: string | null
+          price_range?: string | null
+          rating?: number
+          updated_at?: string
+          whatsapp?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

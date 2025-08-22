@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { ArrowLeft, Heart, Star, MapPin, Phone, Share, MessageCircle, DollarSign } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { AppHeader } from "@/components/AppHeader";
 import { BottomNavigation } from "@/components/BottomNavigation";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,14 @@ import { Badge } from "@/components/ui/badge";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
+import { useRestaurant } from "@/hooks/useRestaurants";
+
+// Import restaurant images
+import restaurant1 from "@/assets/restaurant-1.jpg";
+import restaurant2 from "@/assets/restaurant-2.jpg";
+import restaurant3 from "@/assets/restaurant-3.jpg";
+import restaurant4 from "@/assets/restaurant-4.jpg";
+import restaurant5 from "@/assets/restaurant-5.jpg";
 
 // Mock data for demonstration
 const mockRestaurant = {
@@ -67,8 +75,53 @@ const mockReviews = [
 ];
 
 export default function RestaurantProfile() {
+  const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [isFavorite, setIsFavorite] = useState(false);
+  const { data: restaurant, isLoading, error } = useRestaurant(id || "");
+
+  // Map das imagens locais
+  const imageMap = {
+    '/src/assets/restaurant-1.jpg': restaurant1,
+    '/src/assets/restaurant-2.jpg': restaurant2,
+    '/src/assets/restaurant-3.jpg': restaurant3,
+    '/src/assets/restaurant-4.jpg': restaurant4,
+    '/src/assets/restaurant-5.jpg': restaurant5,
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background pb-20">
+        <AppHeader />
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+            <p className="text-muted-foreground">Carregando restaurante...</p>
+          </div>
+        </div>
+        <BottomNavigation />
+      </div>
+    );
+  }
+
+  if (error || !restaurant) {
+    return (
+      <div className="min-h-screen bg-background pb-20">
+        <AppHeader />
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <p className="text-destructive mb-2">Restaurante não encontrado</p>
+            <Button onClick={() => navigate('/')} variant="outline">
+              Voltar para Home
+            </Button>
+          </div>
+        </div>
+        <BottomNavigation />
+      </div>
+    );
+  }
+
+  const restaurantImage = imageMap[restaurant.image_url as keyof typeof imageMap] || restaurant1;
 
   const handleBack = () => {
     navigate(-1);
@@ -89,7 +142,8 @@ export default function RestaurantProfile() {
   };
 
   const handleWhatsApp = () => {
-    window.open(`https://wa.me/${mockRestaurant.phone.replace(/\D/g, '')}`);
+    const phone = restaurant.whatsapp || restaurant.phone || "5511999999999";
+    window.open(`https://wa.me/${phone.replace(/\D/g, '')}`);
   };
 
   const handleAddReview = () => {
@@ -112,7 +166,7 @@ export default function RestaurantProfile() {
         </Button>
         
         <h1 className="text-lg font-semibold text-foreground flex-1 text-center px-4">
-          {mockRestaurant.name}
+          {restaurant.name}
         </h1>
         
         <Button 
@@ -130,12 +184,12 @@ export default function RestaurantProfile() {
         <div className="relative">
           <Carousel className="w-full">
             <CarouselContent>
-              {mockRestaurant.images.map((image, index) => (
+              {[restaurantImage, restaurant2, restaurant3, restaurant4].map((image, index) => (
                 <CarouselItem key={index}>
                   <div className="relative h-64 w-full">
                     <img 
                       src={image} 
-                      alt={`${mockRestaurant.name} - Foto ${index + 1}`}
+                      alt={`${restaurant.name} - Foto ${index + 1}`}
                       className="w-full h-full object-cover"
                     />
                   </div>
@@ -147,17 +201,13 @@ export default function RestaurantProfile() {
           </Carousel>
           
           {/* Logo opcional */}
-          {mockRestaurant.logo && (
-            <div className="absolute bottom-4 left-4">
-              <div className="w-16 h-16 bg-card rounded-lg shadow-lg flex items-center justify-center">
-                <img 
-                  src={mockRestaurant.logo} 
-                  alt={`${mockRestaurant.name} logo`}
-                  className="w-12 h-12 object-contain"
-                />
-              </div>
+          <div className="absolute bottom-4 left-4">
+            <div className="w-16 h-16 bg-card rounded-lg shadow-lg flex items-center justify-center">
+              <span className="text-2xl font-bold text-primary">
+                {restaurant.name.charAt(0)}
+              </span>
             </div>
-          )}
+          </div>
         </div>
 
         {/* Informações Principais */}
@@ -166,21 +216,21 @@ export default function RestaurantProfile() {
             <div className="flex items-center gap-2">
               <div className="flex items-center gap-1">
                 <Star className="w-4 h-4 fill-primary text-primary" />
-                <span className="font-semibold text-foreground">{mockRestaurant.rating}</span>
-                <span className="text-muted-foreground">({mockRestaurant.reviewCount} avaliações)</span>
+                <span className="font-semibold text-foreground">{restaurant.rating}</span>
+                <span className="text-muted-foreground">(128 avaliações)</span>
               </div>
             </div>
-            <Badge variant="secondary">{mockRestaurant.category}</Badge>
+            <Badge variant="secondary">{restaurant.category}</Badge>
           </div>
 
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-1">
               <DollarSign className="w-4 h-4 text-muted-foreground" />
-              <span className="text-foreground">{mockRestaurant.priceRange}</span>
+              <span className="text-foreground">{restaurant.price_range || "$$"}</span>
             </div>
             <div className="flex items-center gap-1">
               <MapPin className="w-4 h-4 text-muted-foreground" />
-              <span className="text-foreground flex-1">{mockRestaurant.location}</span>
+              <span className="text-foreground flex-1">{restaurant.location || restaurant.distance}</span>
             </div>
           </div>
 
@@ -200,7 +250,7 @@ export default function RestaurantProfile() {
         <div className="p-4">
           <h2 className="text-lg font-semibold text-foreground mb-3">Sobre</h2>
           <p className="text-muted-foreground leading-relaxed">
-            {mockRestaurant.description}
+            {restaurant.description || "Deliciosa comida com ingredientes frescos e de qualidade. Venha experimentar nossa culinária especial!"}
           </p>
         </div>
 
