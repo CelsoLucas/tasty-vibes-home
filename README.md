@@ -1,73 +1,89 @@
-# Welcome to your Lovable project
+# Tasty - Aplicativo Mobile de Avaliações de Restaurantes
 
-## Project info
+Este é um aplicativo móvel desenvolvido com Expo e React Native para avaliações de restaurantes.
 
-**URL**: https://lovable.dev/projects/4a4c3db0-159e-45f8-8229-b1e96d6c7615
+## 🚀 Como executar
 
-## How can I edit this code?
+### Pré-requisitos
 
-There are several ways of editing your application.
+- Node.js (versão 18 ou superior)
+- Expo CLI (`npm install -g @expo/cli`)
+- Dispositivo móvel com o app Expo Go instalado OU emulador Android/iOS
 
-**Use Lovable**
+### Configuração
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/4a4c3db0-159e-45f8-8229-b1e96d6c7615) and start prompting.
+1. Clone o repositório
+2. Instale as dependências:
+   ```bash
+   npm install
+   ```
 
-Changes made via Lovable will be committed automatically to this repo.
+3. Configure as variáveis de ambiente:
+   - Copie o arquivo `.env.example` para `.env`
+   - Adicione suas credenciais do Supabase
 
-**Use your preferred IDE**
+4. Inicie o servidor de desenvolvimento:
+   ```bash
+   npm start
+   ```
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+5. Use o Expo Go no seu dispositivo para escanear o QR code ou execute em um emulador
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+## 📱 Funcionalidades
 
-Follow these steps:
+- **Autenticação**: Login, registro e recuperação de senha
+- **Home**: Lista de restaurantes organizados por categorias
+- **Busca**: Pesquisa de restaurantes por nome ou categoria
+- **Avaliações**: Adicionar avaliações com fotos e comentários
+- **Perfil**: Gerenciar perfil do usuário e visualizar avaliações
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+## 🛠 Tecnologias
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+- **Expo**: Framework para desenvolvimento React Native
+- **React Native**: Framework para aplicativos móveis
+- **NativeWind**: Tailwind CSS para React Native
+- **Supabase**: Backend como serviço (autenticação e banco de dados)
+- **React Query**: Gerenciamento de estado e cache
+- **Expo Router**: Navegação baseada em arquivos
 
-# Step 3: Install the necessary dependencies.
-npm i
+## 📁 Estrutura do Projeto
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+```
+app/
+├── (auth)/          # Telas de autenticação
+├── (tabs)/          # Telas principais com navegação por abas
+├── _layout.tsx      # Layout raiz
+└── index.tsx        # Tela inicial
+
+lib/
+└── supabase.ts      # Configuração do Supabase
+
+hooks/
+└── useRestaurants.ts # Hooks personalizados
 ```
 
-**Edit a file directly in GitHub**
+## 🔧 Desenvolvimento
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+Para adicionar novas telas, crie arquivos na pasta `app/` seguindo a convenção do Expo Router.
 
-**Use GitHub Codespaces**
+Para estilização, use as classes do Tailwind CSS com NativeWind.
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+## 📦 Build
 
-## What technologies are used for this project?
+Para gerar builds de produção:
 
-This project is built with:
+```bash
+# Android
+expo build:android
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+# iOS
+expo build:ios
+```
 
-## How can I deploy this project?
+## 🤝 Contribuição
 
-Simply open [Lovable](https://lovable.dev/projects/4a4c3db0-159e-45f8-8229-b1e96d6c7615) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+1. Faça um fork do projeto
+2. Crie uma branch para sua feature
+3. Commit suas mudanças
+4. Push para a branch
+5. Abra um Pull Request
