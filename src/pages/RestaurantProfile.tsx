@@ -249,51 +249,57 @@ export default function RestaurantProfile() {
             </Button>
           </div>
           
-          <div className="space-y-4">
-            {mockReviews.map((review) => (
-              <Card key={review.id} className="border-0 shadow-sm">
-                <CardContent className="p-4">
-                  <div className="flex gap-3">
-                    <Avatar className="w-10 h-10">
-                      <AvatarImage src={review.user.avatar} />
-                      <AvatarFallback>{review.user.name.charAt(0)}</AvatarFallback>
-                    </Avatar>
-                    
-                    <div className="flex-1">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="font-medium text-foreground">{review.user.name}</span>
-                        <span className="text-xs text-muted-foreground">{review.date}</span>
-                      </div>
-                      
-                      <div className="flex items-center gap-1 mb-2">
-                        {[...Array(5)].map((_, i) => (
-                          <Star 
-                            key={i} 
-                            className={`w-3 h-3 ${i < review.rating ? 'fill-primary text-primary' : 'text-muted-foreground'}`} 
-                          />
-                        ))}
-                      </div>
-                      
-                      <p className="text-foreground text-sm mb-2">{review.comment}</p>
-                      
-                      {review.images.length > 0 && (
-                        <div className="flex gap-2">
-                          {review.images.map((image, index) => (
-                            <img 
-                              key={index}
-                              src={image}
-                              alt={`Foto da avaliação ${index + 1}`}
-                              className="w-12 h-12 object-cover rounded"
-                            />
-                          ))}
+          <Carousel className="w-full">
+            <CarouselContent className="-ml-2 md:-ml-4">
+              {mockReviews.map((review) => (
+                <CarouselItem key={review.id} className="pl-2 md:pl-4 basis-4/5 md:basis-1/2">
+                  <Card className="border-0 shadow-sm">
+                    <CardContent className="p-4">
+                      <div className="flex gap-3">
+                        <Avatar className="w-10 h-10 flex-shrink-0">
+                          <AvatarImage src={review.user.avatar} />
+                          <AvatarFallback>{review.user.name.charAt(0)}</AvatarFallback>
+                        </Avatar>
+                        
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="font-medium text-foreground truncate">{review.user.name}</span>
+                            <span className="text-xs text-muted-foreground flex-shrink-0">{review.date}</span>
+                          </div>
+                          
+                          <div className="flex items-center gap-1 mb-2">
+                            {[...Array(5)].map((_, i) => (
+                              <Star 
+                                key={i} 
+                                className={`w-3 h-3 ${i < review.rating ? 'fill-primary text-primary' : 'text-muted-foreground'}`} 
+                              />
+                            ))}
+                          </div>
+                          
+                          <p className="text-foreground text-sm mb-2 line-clamp-3">{review.comment}</p>
+                          
+                          {review.images.length > 0 && (
+                            <div className="flex gap-2">
+                              {review.images.map((image, index) => (
+                                <img 
+                                  key={index}
+                                  src={image}
+                                  alt={`Foto da avaliação ${index + 1}`}
+                                  className="w-12 h-12 object-cover rounded flex-shrink-0"
+                                />
+                              ))}
+                            </div>
+                          )}
                         </div>
-                      )}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </CarouselItem>
+              ))}
+            </CarouselContent>
+            <CarouselPrevious className="left-0" />
+            <CarouselNext className="right-0" />
+          </Carousel>
         </div>
 
         {/* Ações Rápidas */}

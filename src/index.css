@@ -150,6 +150,13 @@ All colors MUST be HSL.
     -webkit-line-clamp: 1;
   }
 
+  .line-clamp-3 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+  }
+
   .animate-fade-in {
     animation: fadeIn 0.3s ease-in-out;
   }
