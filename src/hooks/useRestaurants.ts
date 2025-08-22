@@ -108,23 +108,39 @@ export const useRestaurantReviews = (restaurantId: string) => {
     queryKey: ['reviews', restaurantId],
     queryFn: async (): Promise<Review[]> => {
       try {
-        const { data, error } = await (supabase as any)
+        // Buscar reviews e perfis separadamente para evitar erro de relacionamento
+        const { data: reviewsData, error: reviewsError } = await (supabase as any)
           .from('reviews')
-          .select(`
-            *,
-            profiles:user_id (
-              display_name,
-              avatar_url
-            )
-          `)
+          .select('*')
           .eq('restaurant_id', restaurantId)
           .order('created_at', { ascending: false });
 
-        if (error) {
-          throw new Error(error.message);
+        if (reviewsError) {
+          console.error('Error fetching reviews:', reviewsError);
+          return [];
         }
 
-        return data || [];
+        if (!reviewsData || reviewsData.length === 0) {
+          return [];
+        }
+
+        // Buscar perfis dos usuários das reviews
+        const userIds = reviewsData.map((review: any) => review.user_id);
+        const { data: profilesData } = await (supabase as any)
+          .from('profiles')
+          .select('id, display_name, avatar_url')
+          .in('id', userIds);
+
+        // Combinar reviews com perfis
+        const reviewsWithProfiles = reviewsData.map((review: any) => {
+          const profile = profilesData?.find((p: any) => p.id === review.user_id);
+          return {
+            ...review,
+            profiles: profile || null
+          };
+        });
+
+        return reviewsWithProfiles;
       } catch (error) {
         console.error('Error fetching reviews:', error);
         return [];
