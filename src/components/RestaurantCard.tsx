@@ -1,5 +1,6 @@
 import { Star, MapPin } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { useNavigate } from "react-router-dom";
 
 interface RestaurantCardProps {
   id: string;
@@ -10,9 +11,18 @@ interface RestaurantCardProps {
   distance: string;
 }
 
-export const RestaurantCard = ({ name, image, rating, category, distance }: RestaurantCardProps) => {
+export const RestaurantCard = ({ id, name, image, rating, category, distance }: RestaurantCardProps) => {
+  const navigate = useNavigate();
+
+  const handleClick = () => {
+    navigate(`/restaurant/${id}`);
+  };
+
   return (
-    <Card className="w-[240px] h-[280px] flex-shrink-0 bg-card hover:shadow-lg transition-all duration-300 border-0 shadow-md">
+    <Card 
+      className="w-[240px] h-[280px] flex-shrink-0 bg-card hover:shadow-lg transition-all duration-300 border-0 shadow-md cursor-pointer"
+      onClick={handleClick}
+    >
       <CardContent className="p-0">
         <div className="relative">
           <img 
