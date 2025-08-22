@@ -1,6 +1,7 @@
 import { Star, MapPin } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
+import { useRestaurantStats } from "@/hooks/useRestaurants";
 
 interface RestaurantCardProps {
   id: string;
@@ -13,10 +14,14 @@ interface RestaurantCardProps {
 
 export const RestaurantCard = ({ id, name, image, rating, category, distance }: RestaurantCardProps) => {
   const navigate = useNavigate();
+  const { data: stats } = useRestaurantStats(id);
 
   const handleClick = () => {
     navigate(`/restaurant/${id}`);
   };
+
+  const displayRating = stats?.averageRating || rating;
+  const reviewCount = stats?.totalReviews || 0;
 
   return (
     <Card 
@@ -32,16 +37,23 @@ export const RestaurantCard = ({ id, name, image, rating, category, distance }: 
           />
           <div className="absolute top-3 right-3 bg-card px-2 py-1 rounded-full shadow-sm flex items-center gap-1">
             <Star className="w-3 h-3 fill-primary text-primary" />
-            <span className="text-xs font-medium text-foreground">{rating}</span>
+            <span className="text-xs font-medium text-foreground">{displayRating}</span>
           </div>
         </div>
         
         <div className="p-3">
           <h3 className="font-semibold text-foreground text-sm mb-1 line-clamp-1">{name}</h3>
           <p className="text-sm text-muted-foreground mb-2">{category}</p>
-          <div className="flex items-center gap-1">
-            <MapPin className="w-3 h-3 text-muted-foreground" />
-            <span className="text-xs text-muted-foreground">{distance}</span>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-1">
+              <MapPin className="w-3 h-3 text-muted-foreground" />
+              <span className="text-xs text-muted-foreground">{distance}</span>
+            </div>
+            {reviewCount > 0 && (
+              <span className="text-xs text-muted-foreground">
+                {reviewCount} avaliações
+              </span>
+            )}
           </div>
         </div>
       </CardContent>
