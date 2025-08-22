@@ -142,8 +142,8 @@ export default function RestaurantProfile() {
                 </CarouselItem>
               ))}
             </CarouselContent>
-            <CarouselPrevious className="left-4" />
-            <CarouselNext className="right-4" />
+            <CarouselPrevious className="left-4 bg-card/80 border-0 hover:bg-card/90 text-foreground/80 w-8 h-8" />
+            <CarouselNext className="right-4 bg-card/80 border-0 hover:bg-card/90 text-foreground/80 w-8 h-8" />
           </Carousel>
           
           {/* Logo opcional */}
@@ -297,8 +297,6 @@ export default function RestaurantProfile() {
                 </CarouselItem>
               ))}
             </CarouselContent>
-            <CarouselPrevious className="left-0" />
-            <CarouselNext className="right-0" />
           </Carousel>
         </div>
 
