@@ -10,6 +10,8 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import ForgotPassword from "./pages/ForgotPassword";
 import SearchPage from "./pages/SearchPage";
+import MatchingPage from "./pages/MatchingPage";
+import MyMatchesPage from "./pages/MyMatchesPage";
 import AddReviewPage from "./pages/AddReviewPage";
 import ProfilePage from "./pages/ProfilePage";
 import RestaurantProfile from "./pages/RestaurantProfile";
@@ -32,6 +34,8 @@ const App = () => (
           {/* Protected Routes */}
           <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
           <Route path="/search" element={<ProtectedRoute><SearchPage /></ProtectedRoute>} />
+          <Route path="/matching" element={<ProtectedRoute><MatchingPage /></ProtectedRoute>} />
+          <Route path="/my-matches" element={<ProtectedRoute><MyMatchesPage /></ProtectedRoute>} />
           <Route path="/add-review" element={<ProtectedRoute><AddReviewPage /></ProtectedRoute>} />
           <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
           <Route path="/restaurant/:id" element={<ProtectedRoute><RestaurantProfile /></ProtectedRoute>} />

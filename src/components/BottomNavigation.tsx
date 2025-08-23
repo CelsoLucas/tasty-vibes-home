@@ -1,10 +1,11 @@
-import { Home, Search, Plus, User } from "lucide-react";
+import { Home, Search, Plus, User, Heart } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 
 const tabs = [
   { id: 'home', icon: Home, label: 'Início', path: '/' },
   { id: 'search', icon: Search, label: 'Buscar', path: '/search' },
+  { id: 'matching', icon: Heart, label: 'Matching', path: '/matching' },
   { id: 'add', icon: Plus, label: 'Adicionar', path: '/add-review' },
   { id: 'profile', icon: User, label: 'Perfil', path: '/profile' }
 ];

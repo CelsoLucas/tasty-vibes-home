@@ -1,3 +1,7 @@
+import { useNavigate } from "react-router-dom";
+import { Heart, Star } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { AppHeader } from "@/components/AppHeader";
 import { RestaurantSection } from "@/components/RestaurantSection";
 import { BottomNavigation } from "@/components/BottomNavigation";
@@ -12,6 +16,7 @@ import restaurant4 from "@/assets/restaurant-4.jpg";
 import restaurant5 from "@/assets/restaurant-5.jpg";
 
 const Index = () => {
+  const navigate = useNavigate();
   const { data: restaurants, isLoading, error } = useRestaurants();
 
   // Map das imagens locais
@@ -95,6 +100,39 @@ const Index = () => {
     <div className="min-h-screen bg-background pb-20">
       <AppHeader />
       
+      {/* Matching Feature Card */}
+      <div className="p-4">
+        <Card className="bg-gradient-to-r from-pink-50 to-orange-50 dark:from-pink-950/20 dark:to-orange-950/20 border-2 border-primary/20">
+          <CardHeader className="pb-4">
+            <CardTitle className="flex items-center gap-2 text-primary">
+              <Heart className="w-6 h-6" />
+              Encontre Restaurantes com Amigos
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-muted-foreground mb-4">
+              Use nosso sistema de matching estilo Tinder para descobrir restaurantes que você e seu amigo vão adorar!
+            </p>
+            <div className="flex gap-3">
+              <Button 
+                onClick={() => navigate('/matching')}
+                className="flex-1"
+              >
+                <Heart className="w-4 h-4 mr-2" />
+                Começar Matching
+              </Button>
+              <Button 
+                variant="outline"
+                onClick={() => navigate('/my-matches')}
+              >
+                <Star className="w-4 h-4 mr-2" />
+                Meus Matches
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
       <main className="space-y-6 pt-4 pb-4">
         <RestaurantSection title="Melhores da Cidade" restaurants={restaurantSections.bestInCity} />
         <RestaurantSection title="Melhores da Região" restaurants={restaurantSections.bestInRegion} />
