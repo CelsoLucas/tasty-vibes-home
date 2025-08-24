@@ -60,10 +60,10 @@ export const useCreateSession = () => {
       // Get restaurants based on filters
       let query = (supabase as any).from('restaurants').select('id');
       
-      if (filters.category) {
+      if (filters.category && filters.category !== "") {
         query = query.eq('category', filters.category);
       }
-      if (filters.price_range) {
+      if (filters.price_range && filters.price_range !== "") {
         query = query.eq('price_range', filters.price_range);
       }
 
@@ -71,6 +71,16 @@ export const useCreateSession = () => {
       if (restaurantsError) throw restaurantsError;
 
       const restaurantIds = restaurants?.map((r: any) => r.id) || [];
+      
+      // Se não encontrou restaurantes com os filtros, pega todos
+      if (restaurantIds.length === 0) {
+        const { data: allRestaurants, error: allError } = await (supabase as any)
+          .from('restaurants')
+          .select('id');
+        
+        if (allError) throw allError;
+        restaurantIds.push(...(allRestaurants?.map((r: any) => r.id) || []));
+      }
       const sessionCode = generateSessionCode();
 
       const { data, error } = await (supabase as any)

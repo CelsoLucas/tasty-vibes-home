@@ -112,7 +112,7 @@ const MatchingPage = () => {
 
   const copyInviteLink = () => {
     if (session) {
-      const url = `${window.location.origin}/matching?code=${session.session_code}`;
+      const url = `https://4a4c3db0-159e-45f8-8229-b1e96d6c7615.sandbox.lovable.dev/matching?code=${session.session_code}`;
       navigator.clipboard.writeText(url);
       toast({
         title: "Link copiado!",
