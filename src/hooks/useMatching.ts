@@ -126,13 +126,15 @@ export const useJoinSession = () => {
       if (!user.user) throw new Error('User not authenticated');
 
       // Find session by code
-      const { data: session, error: sessionError } = await (supabase as any)
+      const { data: sessions, error: sessionError } = await (supabase as any)
         .from('matching_sessions')
         .select('*')
-        .eq('session_code', sessionCode)
-        .single();
+        .eq('session_code', sessionCode);
 
-      if (sessionError || !session) throw new Error('Sessão não encontrada');
+      if (sessionError) throw sessionError;
+      if (!sessions || sessions.length === 0) throw new Error('Sessão não encontrada');
+      
+      const session = sessions[0];
       if (session.participants.length >= 2) throw new Error('Sessão já está cheia');
       if (session.participants.includes(user.user.id)) throw new Error('Você já está nesta sessão');
 
@@ -145,7 +147,7 @@ export const useJoinSession = () => {
         })
         .eq('id', session.id)
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
       return data;
@@ -178,7 +180,7 @@ export const useSession = (sessionId: string) => {
         .from('matching_sessions')
         .select('*')
         .eq('id', sessionId)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
       return data;
@@ -205,7 +207,7 @@ export const useSwipe = () => {
           liked
         })
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
       return data;
