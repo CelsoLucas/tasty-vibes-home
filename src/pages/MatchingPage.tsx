@@ -78,13 +78,10 @@ const MatchingPage = () => {
       if (joinedSession) {
         setCurrentSessionId(joinedSession.id);
         setMode('session');
-      } else {
-        // Fallback: try to find the session by code
-        console.log('No session returned, trying to find by code...');
-        // Force a refresh by setting the session ID based on the code
+        // Force refresh the session data
         setTimeout(() => {
-          setMode('session');
-        }, 1000);
+          window.location.reload();
+        }, 500);
       }
     } catch (error) {
       console.error('Error joining session:', error);
@@ -288,10 +285,13 @@ const MatchingPage = () => {
 
         {/* Content */}
         <div className="flex-1 p-4">
-          {session && session.participants.length < 2 ? (
+          {session && session.participants && session.participants.length < 2 ? (
             <div className="max-w-md mx-auto text-center pt-20">
               <Users className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
               <h2 className="text-xl font-semibold mb-2">Aguardando amigo...</h2>
+              <p className="text-muted-foreground mb-2">
+                Participantes: {session.participants?.length || 0}/2
+              </p>
               <p className="text-muted-foreground mb-6">
                 Compartilhe o código <span className="font-mono font-bold">{session.session_code}</span> com seu amigo
               </p>

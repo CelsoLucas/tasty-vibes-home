@@ -185,9 +185,11 @@ export const useSession = (sessionId: string) => {
         .maybeSingle();
 
       if (error) throw error;
+      console.log('Session data:', data);
       return data;
     },
     enabled: !!sessionId,
+    refetchInterval: 2000, // Refresh every 2 seconds to get live updates
   });
 };
 
