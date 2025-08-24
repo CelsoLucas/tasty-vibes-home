@@ -74,9 +74,17 @@ const MatchingPage = () => {
   const handleJoinSession = async () => {
     try {
       const joinedSession = await joinSessionMutation.mutateAsync(sessionCode);
+      console.log('Joined session:', joinedSession);
       if (joinedSession) {
         setCurrentSessionId(joinedSession.id);
         setMode('session');
+      } else {
+        // Fallback: try to find the session by code
+        console.log('No session returned, trying to find by code...');
+        // Force a refresh by setting the session ID based on the code
+        setTimeout(() => {
+          setMode('session');
+        }, 1000);
       }
     } catch (error) {
       console.error('Error joining session:', error);

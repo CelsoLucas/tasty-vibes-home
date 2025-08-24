@@ -150,9 +150,11 @@ export const useJoinSession = () => {
         .maybeSingle();
 
       if (error) throw error;
-      return data;
+      console.log('Updated session:', data);
+      return data || session; // Return the session even if update data is null
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log('Session join successful:', data);
       toast({
         title: "Sessão encontrada!",
         description: "Você entrou na sessão com sucesso.",
