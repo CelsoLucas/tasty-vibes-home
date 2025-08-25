@@ -78,10 +78,6 @@ const MatchingPage = () => {
       if (joinedSession) {
         setCurrentSessionId(joinedSession.id);
         setMode('session');
-        // Force refresh the session data
-        setTimeout(() => {
-          window.location.reload();
-        }, 500);
       }
     } catch (error) {
       console.error('Error joining session:', error);
