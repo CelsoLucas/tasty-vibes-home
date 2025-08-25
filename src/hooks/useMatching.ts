@@ -139,19 +139,20 @@ export const useJoinSession = () => {
       if (session.participants.includes(user.user.id)) throw new Error('Você já está nesta sessão');
 
       // Add user to participants
+      const updatedParticipants = [...session.participants, user.user.id];
       const { data, error } = await (supabase as any)
         .from('matching_sessions')
         .update({
-          participants: [...session.participants, user.user.id],
-          status: 'active'
+          participants: updatedParticipants,
+          status: updatedParticipants.length >= 2 ? 'active' : 'waiting'
         })
         .eq('id', session.id)
         .select()
-        .maybeSingle();
+        .single();
 
       if (error) throw error;
       console.log('Updated session:', data);
-      return data || session; // Return the session even if update data is null
+      return data;
     },
     onSuccess: (data) => {
       console.log('Session join successful:', data);
@@ -159,7 +160,9 @@ export const useJoinSession = () => {
         title: "Sessão encontrada!",
         description: "Você entrou na sessão com sucesso.",
       });
+      // Invalidate all session-related queries to force refresh
       queryClient.invalidateQueries({ queryKey: ['matching-sessions'] });
+      queryClient.invalidateQueries({ queryKey: ['matching-session'] });
     },
     onError: (error) => {
       toast({
