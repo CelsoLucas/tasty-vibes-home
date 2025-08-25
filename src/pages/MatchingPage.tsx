@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Heart, X, Users, Copy, ArrowLeft } from "lucide-react";
@@ -35,7 +36,7 @@ const MatchingPage = () => {
   const swipeMutation = useSwipe();
   
   const { data: restaurants } = useRestaurants();
-  const { data: session } = useSession(currentSessionId || "");
+  const { data: session, refetch: refetchSession } = useSession(currentSessionId || "");
   const { data: swipes } = useSessionSwipes(currentSessionId || "");
   const { data: matches } = useSessionMatches(currentSessionId || "");
 
@@ -63,6 +64,7 @@ const MatchingPage = () => {
     try {
       const newSession = await createSessionMutation.mutateAsync(filters);
       if (newSession) {
+        console.log('Created session:', newSession);
         setCurrentSessionId(newSession.id);
         setMode('session');
       }
@@ -78,6 +80,10 @@ const MatchingPage = () => {
       if (joinedSession) {
         setCurrentSessionId(joinedSession.id);
         setMode('session');
+        // Force refresh the session data after joining
+        setTimeout(() => {
+          refetchSession();
+        }, 1000);
       }
     } catch (error) {
       console.error('Error joining session:', error);
@@ -130,6 +136,18 @@ const MatchingPage = () => {
   ) || [];
 
   const currentRestaurant = availableRestaurants[currentRestaurantIndex];
+
+  // Add debug logging for session state
+  useEffect(() => {
+    if (session) {
+      console.log('Current session state:', {
+        id: session.id,
+        participants: session.participants,
+        participantCount: session.participants?.length || 0,
+        status: session.status
+      });
+    }
+  }, [session]);
 
   if (mode === 'create') {
     return (
@@ -266,16 +284,26 @@ const MatchingPage = () => {
               Sair
             </Button>
             
-            {session && session.participants.length < 2 && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={copyInviteLink}
-              >
-                <Copy className="w-4 h-4 mr-2" />
-                Código: {session.session_code}
-              </Button>
+            {session && (
+              <div className="text-center">
+                <div className="text-sm text-muted-foreground">
+                  Participantes: {session.participants?.length || 0}/2
+                </div>
+                {session.participants && session.participants.length < 2 && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={copyInviteLink}
+                    className="mt-1"
+                  >
+                    <Copy className="w-4 h-4 mr-2" />
+                    {session.session_code}
+                  </Button>
+                )}
+              </div>
             )}
+            
+            <div className="w-20" />
           </div>
         </div>
 
@@ -284,7 +312,7 @@ const MatchingPage = () => {
           {session && session.participants && session.participants.length < 2 ? (
             <div className="max-w-md mx-auto text-center pt-20">
               <Users className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
-              <h2 className="text-xl font-semibold mb-2">Aguardando amigo...</h2>
+              <h2 className="text-xl font-semibold mb-2">Aguardando segundo participante...</h2>
               <p className="text-muted-foreground mb-2">
                 Participantes: {session.participants?.length || 0}/2
               </p>

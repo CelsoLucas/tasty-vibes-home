@@ -125,21 +125,40 @@ export const useJoinSession = () => {
       const { data: user } = await supabase.auth.getUser();
       if (!user.user) throw new Error('User not authenticated');
 
+      console.log('Attempting to join session with code:', sessionCode);
+
       // Find session by code
       const { data: sessions, error: sessionError } = await (supabase as any)
         .from('matching_sessions')
         .select('*')
-        .eq('session_code', sessionCode);
+        .eq('session_code', sessionCode.toUpperCase());
 
-      if (sessionError) throw sessionError;
-      if (!sessions || sessions.length === 0) throw new Error('Sessão não encontrada');
+      if (sessionError) {
+        console.error('Error finding session:', sessionError);
+        throw sessionError;
+      }
+      
+      if (!sessions || sessions.length === 0) {
+        throw new Error('Código de sessão não encontrado');
+      }
       
       const session = sessions[0];
-      if (session.participants.length >= 2) throw new Error('Sessão já está cheia');
-      if (session.participants.includes(user.user.id)) throw new Error('Você já está nesta sessão');
+      console.log('Found session:', session);
+      
+      // Check if user is already in the session
+      if (session.participants.includes(user.user.id)) {
+        console.log('User already in session, returning session');
+        return session; // Just return the session instead of throwing error
+      }
+
+      if (session.participants.length >= 2) {
+        throw new Error('Esta sessão já está cheia');
+      }
 
       // Add user to participants
       const updatedParticipants = [...session.participants, user.user.id];
+      console.log('Updating participants to:', updatedParticipants);
+      
       const { data, error } = await (supabase as any)
         .from('matching_sessions')
         .update({
@@ -148,23 +167,27 @@ export const useJoinSession = () => {
         })
         .eq('id', session.id)
         .select()
-        .single();
+        .maybeSingle(); // Use maybeSingle instead of single
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error updating session:', error);
+        throw error;
+      }
+      
       console.log('Updated session:', data);
-      return data;
+      return data || session;
     },
     onSuccess: (data) => {
       console.log('Session join successful:', data);
       toast({
-        title: "Sessão encontrada!",
-        description: "Você entrou na sessão com sucesso.",
+        title: "Entrando na sessão...",
+        description: "Redirecionando para a sessão.",
       });
-      // Invalidate all session-related queries to force refresh
-      queryClient.invalidateQueries({ queryKey: ['matching-sessions'] });
-      queryClient.invalidateQueries({ queryKey: ['matching-session'] });
+      // Force refresh all queries
+      queryClient.invalidateQueries();
     },
     onError: (error) => {
+      console.error('Join session error:', error);
       toast({
         title: "Erro ao entrar na sessão",
         description: error.message,
