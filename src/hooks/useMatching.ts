@@ -155,39 +155,21 @@ export const useJoinSession = () => {
         throw new Error('Esta sessão já está cheia');
       }
 
-      // Add user to participants using SQL array_append
+      // Use SQL function to join session safely
       console.log('Adding user to participants:', user.user.id);
       
-      const { data, error } = await supabase.rpc('join_session', {
+      const { data, error } = await (supabase as any).rpc('join_session', {
         session_id: session.id,
         user_id: user.user.id
       });
 
       if (error) {
         console.error('Error calling join_session function:', error);
-        // Fallback to direct update
-        const updatedParticipants = [...session.participants, user.user.id];
-        const { data: fallbackData, error: fallbackError } = await (supabase as any)
-          .from('matching_sessions')
-          .update({
-            participants: updatedParticipants,
-            status: updatedParticipants.length >= 2 ? 'active' : 'waiting'
-          })
-          .eq('id', session.id)
-          .select()
-          .single();
-
-        if (fallbackError) throw fallbackError;
-        return fallbackData;
-      }
-
-      if (error) {
-        console.error('Error updating session:', error);
         throw error;
       }
       
-      console.log('Updated session:', data);
-      return data || session;
+      console.log('Updated session from function:', data);
+      return data && data.length > 0 ? data[0] : session;
     },
     onSuccess: (data) => {
       console.log('Session join successful:', data);

@@ -376,7 +376,20 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      join_session: {
+        Args: { session_id: string; user_id: string }
+        Returns: {
+          created_at: string
+          created_by: string
+          filters: Json
+          id: string
+          participants: string[]
+          restaurant_ids: string[]
+          session_code: string
+          status: string
+          updated_at: string
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never
