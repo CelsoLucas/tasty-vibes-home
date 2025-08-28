@@ -6,20 +6,15 @@ import { Badge } from "@/components/ui/badge";
 import { Search, Filter, MapPin, Star } from "lucide-react";
 import { BottomNavigation } from "@/components/BottomNavigation";
 import { AppHeader } from "@/components/AppHeader";
-import { useCategories } from "@/hooks/useCategories";
 
-// Emojis para categorias comuns
-const categoryEmojis: { [key: string]: string } = {
-  'Churrasco': '🥩',
-  'Japonesa': '🍣',
-  'Regional': '🐟',
-  'Pizza': '🍕',
-  'Fast Food': '🍔',
-  'Italiana': '🍝',
-  'Café': '☕',
-  'Açaí': '🫐',
-  'Brasileira': '🇧🇷'
-};
+const categories = [
+  { id: "lanches", name: "Lanches", emoji: "🍔" },
+  { id: "massas", name: "Massas", emoji: "🍝" },
+  { id: "japones", name: "Japonês", emoji: "🍣" },
+  { id: "pizza", name: "Pizza", emoji: "🍕" },
+  { id: "saudavel", name: "Saudável", emoji: "🥗" },
+  { id: "cafes", name: "Cafés", emoji: "☕" }
+];
 
 const mockResults = [
   {
@@ -52,7 +47,6 @@ const SearchPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [results, setResults] = useState(mockResults);
-  const { data: categories, isLoading: categoriesLoading } = useCategories();
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);
@@ -112,21 +106,17 @@ const SearchPage = () => {
       {/* Carrossel de categorias */}
       <div className="p-4">
         <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-2">
-          {categoriesLoading ? (
-            <div className="text-muted-foreground">Carregando categorias...</div>
-          ) : (
-            categories?.map((category: string) => (
-              <Button
-                key={category}
-                variant={selectedCategory === category ? "default" : "outline"}
-                onClick={() => handleCategorySelect(category)}
-                className="flex-shrink-0 gap-2 h-12 px-4"
-              >
-                <span className="text-lg">{categoryEmojis[category] || '🍽️'}</span>
-                <span className="whitespace-nowrap">{category}</span>
-              </Button>
-            ))
-          )}
+          {categories.map((category) => (
+            <Button
+              key={category.id}
+              variant={selectedCategory === category.id ? "default" : "outline"}
+              onClick={() => handleCategorySelect(category.id)}
+              className="flex-shrink-0 gap-2 h-12 px-4"
+            >
+              <span className="text-lg">{category.emoji}</span>
+              <span className="whitespace-nowrap">{category.name}</span>
+            </Button>
+          ))}
         </div>
       </div>
 
