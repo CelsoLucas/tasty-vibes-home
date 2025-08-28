@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { useCreateSession, useJoinSession, useSession, useSwipe, useSessionSwipes, useSessionMatches } from "@/hooks/useMatching";
 import { useRestaurants } from "@/hooks/useRestaurants";
+import { useCategories } from "@/hooks/useCategories";
 
 const MatchingPage = () => {
   const navigate = useNavigate();
@@ -36,6 +37,7 @@ const MatchingPage = () => {
   const swipeMutation = useSwipe();
   
   const { data: restaurants } = useRestaurants();
+  const { data: categories, isLoading: categoriesLoading } = useCategories();
   const { data: session, refetch: refetchSession } = useSession(currentSessionId || "");
   const { data: swipes } = useSessionSwipes(currentSessionId || "");
   const { data: matches } = useSessionMatches(currentSessionId || "");
@@ -177,11 +179,13 @@ const MatchingPage = () => {
                     <SelectValue placeholder="Selecione uma categoria" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="Italiana">Italiana</SelectItem>
-                    <SelectItem value="Brasileira">Brasileira</SelectItem>
-                    <SelectItem value="Japonesa">Japonesa</SelectItem>
-                    <SelectItem value="Fast Food">Fast Food</SelectItem>
-                    <SelectItem value="Pizzaria">Pizzaria</SelectItem>
+                    {categoriesLoading ? (
+                      <SelectItem value="" disabled>Carregando categorias...</SelectItem>
+                    ) : (
+                      categories?.map((category: string) => (
+                        <SelectItem key={category} value={category}>{category}</SelectItem>
+                      ))
+                    )}
                   </SelectContent>
                 </Select>
               </div>
