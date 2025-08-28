@@ -155,34 +155,21 @@ export const useJoinSession = () => {
         throw new Error('Esta sessão já está cheia');
       }
 
-      // Use direct update with proper array handling
+      // Use SQL function to add participant safely
       console.log('Adding user to participants:', user.user.id);
       
-      // Check if user is already in participants to avoid duplicates
-      const updatedParticipants = session.participants.includes(user.user.id) 
-        ? session.participants 
-        : [...session.participants, user.user.id];
-      
-      const newStatus = updatedParticipants.length >= 2 ? 'active' : 'waiting';
-      
-      const { data, error } = await (supabase as any)
-        .from('matching_sessions')
-        .update({
-          participants: updatedParticipants,
-          status: newStatus,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', session.id)
-        .select()
-        .maybeSingle();
-      
+      const { data, error } = await (supabase as any).rpc('add_participant_to_session', {
+        p_session_id: session.id,
+        p_user_id: user.user.id
+      });
+
       if (error) {
-        console.error('Error updating session:', error);
+        console.error('Error calling add_participant_to_session function:', error);
         throw error;
       }
       
-      console.log('Updated session:', data);
-      return data || session;
+      console.log('Updated session from function:', data);
+      return data && data.length > 0 ? data[0] : session;
     },
     onSuccess: (data) => {
       console.log('Session join successful:', data);
