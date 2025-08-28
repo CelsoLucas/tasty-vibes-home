@@ -376,6 +376,20 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      add_participant_to_session: {
+        Args: { p_session_id: string; p_user_id: string }
+        Returns: {
+          created_at: string
+          created_by: string
+          filters: Json
+          id: string
+          participants: string[]
+          restaurant_ids: string[]
+          session_code: string
+          status: string
+          updated_at: string
+        }[]
+      }
       join_session: {
         Args: { session_id: string; user_id: string }
         Returns: {

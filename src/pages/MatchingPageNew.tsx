@@ -41,7 +41,7 @@ const MatchingPageNew = () => {
       if (!user.user) throw new Error('User not authenticated');
 
       // Get restaurants based on filters
-      let query = supabase.from('restaurants').select('id');
+      let query = (supabase as any).from('restaurants').select('id');
       
       if (filters.category && filters.category !== "") {
         query = query.eq('category', filters.category);
@@ -57,7 +57,7 @@ const MatchingPageNew = () => {
       
       // Se não encontrou restaurantes com os filtros, pega todos
       if (restaurantIds.length === 0) {
-        const { data: allRestaurants, error: allError } = await supabase
+        const { data: allRestaurants, error: allError } = await (supabase as any)
           .from('restaurants')
           .select('id');
         
@@ -67,7 +67,7 @@ const MatchingPageNew = () => {
       
       const sessionCode = Math.random().toString(36).substring(2, 8).toUpperCase();
 
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('matching_sessions')
         .insert({
           created_by: user.user.id,
@@ -106,7 +106,7 @@ const MatchingPageNew = () => {
       if (!user.user) throw new Error('User not authenticated');
 
       // Find session by code
-      const { data: sessions, error: sessionError } = await supabase
+      const { data: sessions, error: sessionError } = await (supabase as any)
         .from('matching_sessions')
         .select('*')
         .eq('session_code', sessionCode.toUpperCase())
@@ -116,33 +116,31 @@ const MatchingPageNew = () => {
       if (!sessions) throw new Error('Código de sessão não encontrado');
       
       // Check if user is already in the session
-      if (sessions.participants.includes(user.user.id)) {
+      if ((sessions as any).participants.includes(user.user.id)) {
         setCurrentSession(sessions);
         setMode('session');
         return;
       }
 
-      if (sessions.participants.length >= 2) {
+      if ((sessions as any).participants.length >= 2) {
         throw new Error('Esta sessão já está cheia');
       }
 
-      // Use raw SQL to update participants array to avoid RLS issues
-      const { data, error } = await supabase.rpc('add_participant_to_session', {
-        p_session_id: sessions.id,
+      const { data, error } = await (supabase as any).rpc('add_participant_to_session', {
+        p_session_id: (sessions as any).id,
         p_user_id: user.user.id
       });
 
       if (error) {
         console.error('RPC error, trying direct update:', error);
-        // Fallback to direct update
-        const updatedParticipants = [...sessions.participants, user.user.id];
-        const { data: updateData, error: updateError } = await supabase
+        const updatedParticipants = [...(sessions as any).participants, user.user.id];
+        const { data: updateData, error: updateError } = await (supabase as any)
           .from('matching_sessions')
           .update({
             participants: updatedParticipants,
             status: updatedParticipants.length >= 2 ? 'active' : 'waiting'
           })
-          .eq('id', sessions.id)
+          .eq('id', (sessions as any).id)
           .select()
           .single();
         
