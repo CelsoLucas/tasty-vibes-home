@@ -6,15 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { Search, Filter, MapPin, Star } from "lucide-react";
 import { BottomNavigation } from "@/components/BottomNavigation";
 import { AppHeader } from "@/components/AppHeader";
-
-const categories = [
-  { id: "lanches", name: "Lanches", emoji: "🍔" },
-  { id: "massas", name: "Massas", emoji: "🍝" },
-  { id: "japones", name: "Japonês", emoji: "🍣" },
-  { id: "pizza", name: "Pizza", emoji: "🍕" },
-  { id: "saudavel", name: "Saudável", emoji: "🥗" },
-  { id: "cafes", name: "Cafés", emoji: "☕" }
-];
+import { useCategories } from "@/hooks/useCategories";
+import { useRestaurants } from "@/hooks/useRestaurants";
 
 const mockResults = [
   {
@@ -46,34 +39,39 @@ const mockResults = [
 const SearchPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [results, setResults] = useState(mockResults);
+  
+  const { data: categories, isLoading: categoriesLoading } = useCategories();
+  const { data: restaurants, isLoading: restaurantsLoading } = useRestaurants();
+  
+  // Transformar dados dos restaurantes para o formato esperado
+  const transformedRestaurants = restaurants?.map(restaurant => ({
+    id: restaurant.id,
+    name: restaurant.name,
+    category: restaurant.category,
+    rating: Number(restaurant.rating),
+    distance: restaurant.distance,
+    image: restaurant.image_url || "/placeholder.svg"
+  })) || [];
+  
+  // Filtrar restaurantes baseado na busca e categoria
+  const filteredResults = transformedRestaurants.filter(restaurant => {
+    const matchesSearch = searchQuery === "" || 
+      restaurant.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      restaurant.category.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    const matchesCategory = !selectedCategory || 
+      restaurant.category === selectedCategory;
+    
+    return matchesSearch && matchesCategory;
+  });
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);
-    // TODO: Implementar lógica de busca real
-    if (query.trim() === "") {
-      setResults(mockResults);
-    } else {
-      const filtered = mockResults.filter(item =>
-        item.name.toLowerCase().includes(query.toLowerCase()) ||
-        item.category.toLowerCase().includes(query.toLowerCase())
-      );
-      setResults(filtered);
-    }
   };
 
-  const handleCategorySelect = (categoryId: string) => {
-    const newCategory = selectedCategory === categoryId ? null : categoryId;
+  const handleCategorySelect = (categoryName: string) => {
+    const newCategory = selectedCategory === categoryName ? null : categoryName;
     setSelectedCategory(newCategory);
-    
-    if (newCategory) {
-      const filtered = mockResults.filter(item =>
-        item.category.toLowerCase().includes(newCategory.toLowerCase())
-      );
-      setResults(filtered);
-    } else {
-      setResults(mockResults);
-    }
   };
 
   return (
@@ -105,30 +103,44 @@ const SearchPage = () => {
 
       {/* Carrossel de categorias */}
       <div className="p-4">
-        <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-2">
-          {categories.map((category) => (
-            <Button
-              key={category.id}
-              variant={selectedCategory === category.id ? "default" : "outline"}
-              onClick={() => handleCategorySelect(category.id)}
-              className="flex-shrink-0 gap-2 h-12 px-4"
-            >
-              <span className="text-lg">{category.emoji}</span>
-              <span className="whitespace-nowrap">{category.name}</span>
-            </Button>
-          ))}
-        </div>
+        {categoriesLoading ? (
+          <div className="flex gap-3 overflow-x-auto pb-2">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="h-12 w-24 bg-muted animate-pulse rounded-md flex-shrink-0" />
+            ))}
+          </div>
+        ) : (
+          <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-2">
+            {categories?.map((category) => (
+              <Button
+                key={category.id}
+                variant={selectedCategory === category.name ? "default" : "outline"}
+                onClick={() => handleCategorySelect(category.name)}
+                className="flex-shrink-0 gap-2 h-12 px-4"
+              >
+                <span className="text-lg">{category.emoji}</span>
+                <span className="whitespace-nowrap">{category.name}</span>
+              </Button>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Resultados */}
       <div className="px-4 pb-20">
-        {results.length > 0 ? (
+        {restaurantsLoading ? (
+          <div className="space-y-4">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="h-24 bg-muted animate-pulse rounded-md" />
+            ))}
+          </div>
+        ) : filteredResults.length > 0 ? (
           <div className="space-y-4">
             <h3 className="text-lg font-semibold text-foreground">
-              {results.length} resultado{results.length !== 1 ? 's' : ''} encontrado{results.length !== 1 ? 's' : ''}
+              {filteredResults.length} resultado{filteredResults.length !== 1 ? 's' : ''} encontrado{filteredResults.length !== 1 ? 's' : ''}
             </h3>
             <div className="grid gap-4">
-              {results.map((item) => (
+              {filteredResults.map((item) => (
                 <Card key={item.id} className="overflow-hidden hover:shadow-md transition-shadow">
                   <CardContent className="p-0">
                     <div className="flex">

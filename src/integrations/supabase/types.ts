@@ -177,6 +177,33 @@ export type Database = {
         }
         Relationships: []
       }
+      restaurant_categories: {
+        Row: {
+          created_at: string
+          display_order: number
+          emoji: string
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          display_order?: number
+          emoji?: string
+          id?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          display_order?: number
+          emoji?: string
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       restaurants: {
         Row: {
           category: string
