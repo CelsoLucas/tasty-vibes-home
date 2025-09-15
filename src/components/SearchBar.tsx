@@ -1,15 +1,16 @@
 import { Search } from "lucide-react";
-import { AnimatedInput } from "@/components/ui/animated-input";
+import { Input } from "@/components/ui/input";
 
 export const SearchBar = () => {
   return (
     <div className="px-4 py-3">
-      <AnimatedInput
-        label="Buscar restaurantes ou pratos..."
-        leftIcon={<Search className="w-4 h-4" />}
-        className="bg-muted/50"
-        size="sm"
-      />
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+        <Input 
+          placeholder="Buscar restaurantes ou pratos..."
+          className="pl-10 h-12 bg-muted border-0 focus-visible:ring-primary"
+        />
+      </div>
     </div>
   );
 };

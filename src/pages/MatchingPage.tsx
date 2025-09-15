@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Heart, X, Users, Copy } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { AnimatedInput } from "@/components/ui/animated-input";
+import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -231,13 +231,16 @@ const MatchingPage = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <AnimatedInput
-                  id="code"
-                  label="Código da sessão"
-                  value={sessionCode}
-                  onChange={(e) => setSessionCode(e.target.value.toUpperCase())}
-                  className="text-center text-lg font-mono"
-                />
+                <div>
+                  <Label htmlFor="code">Código da sessão</Label>
+                  <Input
+                    id="code"
+                    placeholder="Digite o código"
+                    value={sessionCode}
+                    onChange={(e) => setSessionCode(e.target.value.toUpperCase())}
+                    className="text-center text-lg font-mono"
+                  />
+                </div>
                 
                 <Button
                   onClick={handleJoinSession}

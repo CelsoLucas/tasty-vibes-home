@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { AnimatedInput } from "@/components/ui/animated-input";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Mail, Lock, User, Eye, EyeOff } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
@@ -195,54 +196,104 @@ const Register = () => {
           <CardContent className="space-y-4">
             <form onSubmit={handleRegister} className="space-y-4">
               {/* Full Name Field */}
-              <AnimatedInput
-                id="fullName"
-                type="text"
-                label="Nome completo"
-                value={formData.fullName}
-                onChange={(e) => handleInputChange("fullName", e.target.value)}
-                leftIcon={<User className="h-4 w-4" />}
-                required
-              />
+              <div className="space-y-2">
+                <Label htmlFor="fullName" className="text-sm font-medium text-card-foreground">
+                  Nome completo
+                </Label>
+                <div className="relative">
+                  <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="fullName"
+                    type="text"
+                    placeholder="Seu nome completo"
+                    value={formData.fullName}
+                    onChange={(e) => handleInputChange("fullName", e.target.value)}
+                    className="pl-10 transition-all duration-200 focus:ring-2 focus:ring-primary/20"
+                    required
+                  />
+                </div>
+              </div>
 
               {/* Email Field */}
-              <AnimatedInput
-                id="email"
-                type="email"
-                label="E-mail"
-                value={formData.email}
-                onChange={(e) => handleEmailChange(e.target.value)}
-                leftIcon={<Mail className="h-4 w-4" />}
-                error={emailError}
-                required
-              />
+              <div className="space-y-2">
+                <Label htmlFor="email" className="text-sm font-medium text-card-foreground">
+                  E-mail
+                </Label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="seu@email.com"
+                    value={formData.email}
+                    onChange={(e) => handleEmailChange(e.target.value)}
+                    className={`pl-10 transition-all duration-200 focus:ring-2 focus:ring-primary/20 ${
+                      emailError ? 'border-red-500' : ''
+                    }`}
+                    required
+                  />
+                </div>
+                {emailError && (
+                  <p className="text-sm text-red-500 mt-1">{emailError}</p>
+                )}
+              </div>
 
               {/* Password Field */}
-              <AnimatedInput
-                id="password"
-                type={showPassword ? "text" : "password"}
-                label="Senha"
-                value={formData.password}
-                onChange={(e) => handlePasswordChange(e.target.value)}
-                leftIcon={<Lock className="h-4 w-4" />}
-                rightIcon={showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                onRightIconClick={() => setShowPassword(!showPassword)}
-                required
-              />
+              <div className="space-y-2">
+                <Label htmlFor="password" className="text-sm font-medium text-card-foreground">
+                  Senha
+                </Label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    placeholder="••••••••"
+                    value={formData.password}
+                    onChange={(e) => handlePasswordChange(e.target.value)}
+                    className="pl-10 pr-10 transition-all duration-200 focus:ring-2 focus:ring-primary/20"
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
+              </div>
 
               {/* Confirm Password Field */}
-              <AnimatedInput
-                id="confirmPassword"
-                type={showConfirmPassword ? "text" : "password"}
-                label="Confirmar senha"
-                value={formData.confirmPassword}
-                onChange={(e) => handleConfirmPasswordChange(e.target.value)}
-                leftIcon={<Lock className="h-4 w-4" />}
-                rightIcon={showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                onRightIconClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                error={confirmPasswordError}
-                required
-              />
+              <div className="space-y-2">
+                <Label htmlFor="confirmPassword" className="text-sm font-medium text-card-foreground">
+                  Confirmar senha
+                </Label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="confirmPassword"
+                    type={showConfirmPassword ? "text" : "password"}
+                    placeholder="••••••••"
+                    value={formData.confirmPassword}
+                    onChange={(e) => handleConfirmPasswordChange(e.target.value)}
+                    className={`pl-10 pr-10 transition-all duration-200 focus:ring-2 focus:ring-primary/20 ${
+                      confirmPasswordError ? 'border-red-500' : ''
+                    }`}
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
+                {confirmPasswordError && (
+                  <p className="text-sm text-red-500 mt-1">{confirmPasswordError}</p>
+                )}
+              </div>
 
               {/* Register Button */}
               <Button 

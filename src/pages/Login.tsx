@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { AnimatedInput } from "@/components/ui/animated-input";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Mail, Lock, Eye, EyeOff } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
@@ -146,30 +147,59 @@ const Login = () => {
           <CardContent className="space-y-4">
             <form onSubmit={handleLogin} className="space-y-4">
               {/* Email Field */}
-              <AnimatedInput
-                id="email"
-                type="email"
-                label="E-mail"
-                value={email}
-                onChange={(e) => handleEmailChange(e.target.value)}
-                leftIcon={<Mail className="h-4 w-4" />}
-                error={emailError}
-                required
-              />
+              <div className="space-y-2">
+                <Label htmlFor="email" className="text-sm font-medium text-card-foreground">
+                  E-mail
+                </Label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="seu@email.com"
+                    value={email}
+                    onChange={(e) => handleEmailChange(e.target.value)}
+                    className={`pl-10 transition-all duration-200 focus:ring-2 focus:ring-primary/20 ${
+                      emailError ? 'border-red-500' : ''
+                    }`}
+                    required
+                  />
+                </div>
+                {emailError && (
+                  <p className="text-sm text-red-500 mt-1">{emailError}</p>
+                )}
+              </div>
 
               {/* Password Field */}
-              <AnimatedInput
-                id="password"
-                type={showPassword ? "text" : "password"}
-                label="Senha"
-                value={password}
-                onChange={(e) => handlePasswordChange(e.target.value)}
-                leftIcon={<Lock className="h-4 w-4" />}
-                rightIcon={showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                onRightIconClick={() => setShowPassword(!showPassword)}
-                error={passwordError}
-                required
-              />
+              <div className="space-y-2">
+                <Label htmlFor="password" className="text-sm font-medium text-card-foreground">
+                  Senha
+                </Label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={(e) => handlePasswordChange(e.target.value)}
+                    className={`pl-10 pr-10 transition-all duration-200 focus:ring-2 focus:ring-primary/20 ${
+                      passwordError ? 'border-red-500' : ''
+                    }`}
+                    required
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
+                {passwordError && (
+                  <p className="text-sm text-red-500 mt-1">{passwordError}</p>
+                )}
+              </div>
 
               {/* Login Button */}
               <Button 
