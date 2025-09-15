@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
-import { Heart, X, Users, Copy, ArrowLeft } from "lucide-react";
+import { useSearchParams } from "react-router-dom";
+import { Heart, X, Users, Copy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,9 +12,10 @@ import { useToast } from "@/hooks/use-toast";
 import { useCreateSession, useJoinSession, useSession, useSwipe, useSessionSwipes, useSessionMatches } from "@/hooks/useMatching";
 import { useRestaurants } from "@/hooks/useRestaurants";
 import { useCategories } from "@/hooks/useCategories";
+import { AppHeader } from "@/components/AppHeader";
+import { BottomNavigation } from "@/components/BottomNavigation";
 
 const MatchingPage = () => {
-  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { toast } = useToast();
   
@@ -28,7 +29,6 @@ const MatchingPage = () => {
   // Filters for creating session
   const [filters, setFilters] = useState({
     category: "",
-    price_range: "",
     distance: ""
   });
 
@@ -153,121 +153,108 @@ const MatchingPage = () => {
 
   if (mode === 'create') {
     return (
-      <div className="min-h-screen bg-background p-4">
-        <div className="max-w-md mx-auto pt-8">
-          <Button
-            variant="ghost"
-            onClick={() => navigate('/')}
-            className="mb-6"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Voltar
-          </Button>
+      <div className="min-h-screen bg-background">
+        <AppHeader />
+        
+        <div className="p-4 pb-24">
+          <div className="max-w-md mx-auto pt-8">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-center">
+                  <Users className="w-8 h-8 mx-auto mb-2 text-primary" />
+                  Encontrar Restaurante com Amigos
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <Label htmlFor="category">Tipo de comida</Label>
+                  <Select value={filters.category} onValueChange={(value) => setFilters(prev => ({ ...prev, category: value }))}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione uma categoria" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {categories?.map((category) => (
+                        <SelectItem key={category.id} value={category.name}>
+                          {category.emoji} {category.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
 
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-center">
-                <Users className="w-8 h-8 mx-auto mb-2 text-primary" />
-                Encontrar Restaurante com Amigos
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <Label htmlFor="category">Tipo de comida</Label>
-                <Select value={filters.category} onValueChange={(value) => setFilters(prev => ({ ...prev, category: value }))}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione uma categoria" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {categories?.map((category) => (
-                      <SelectItem key={category.id} value={category.name}>
-                        {category.emoji} {category.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div>
-                <Label htmlFor="price">Faixa de preço</Label>
-                <Select value={filters.price_range} onValueChange={(value) => setFilters(prev => ({ ...prev, price_range: value }))}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione a faixa de preço" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="$">$ - Econômico</SelectItem>
-                    <SelectItem value="$$">$$ - Moderado</SelectItem>
-                    <SelectItem value="$$$">$$$ - Caro</SelectItem>
-                    <SelectItem value="$$$$">$$$$ - Muito caro</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Button
-                  onClick={handleCreateSession}
-                  className="w-full"
-                  disabled={createSessionMutation.isPending}
-                >
-                  {createSessionMutation.isPending ? "Criando..." : "Criar Sessão"}
-                </Button>
-                
-                <Button
-                  variant="outline"
-                  onClick={() => setMode('join')}
-                  className="w-full"
-                >
-                  Entrar em uma Sessão
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+                <div className="space-y-2">
+                  <Button
+                    onClick={handleCreateSession}
+                    className="w-full"
+                    disabled={createSessionMutation.isPending}
+                  >
+                    {createSessionMutation.isPending ? "Criando..." : "Criar Sessão"}
+                  </Button>
+                  
+                  <Button
+                    variant="outline"
+                    onClick={() => setMode('join')}
+                    className="w-full"
+                  >
+                    Entrar em uma Sessão
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </div>
+        
+        <BottomNavigation />
       </div>
     );
   }
 
   if (mode === 'join') {
     return (
-      <div className="min-h-screen bg-background p-4">
-        <div className="max-w-md mx-auto pt-8">
-          <Button
-            variant="ghost"
-            onClick={() => setMode('create')}
-            className="mb-6"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Voltar
-          </Button>
+      <div className="min-h-screen bg-background">
+        <AppHeader />
+        
+        <div className="p-4 pb-24">
+          <div className="max-w-md mx-auto pt-8">
+            <Button
+              variant="outline"
+              onClick={() => setMode('create')}
+              className="mb-6"
+            >
+              Voltar para Criar Sessão
+            </Button>
 
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-center">
-                Entrar na Sessão
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <Label htmlFor="code">Código da sessão</Label>
-                <Input
-                  id="code"
-                  placeholder="Digite o código"
-                  value={sessionCode}
-                  onChange={(e) => setSessionCode(e.target.value.toUpperCase())}
-                  className="text-center text-lg font-mono"
-                />
-              </div>
-              
-              <Button
-                onClick={handleJoinSession}
-                className="w-full"
-                disabled={!sessionCode || joinSessionMutation.isPending}
-              >
-                {joinSessionMutation.isPending ? "Entrando..." : "Entrar na Sessão"}
-              </Button>
-            </CardContent>
-          </Card>
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-center">
+                  Entrar na Sessão
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <Label htmlFor="code">Código da sessão</Label>
+                  <Input
+                    id="code"
+                    placeholder="Digite o código"
+                    value={sessionCode}
+                    onChange={(e) => setSessionCode(e.target.value.toUpperCase())}
+                    className="text-center text-lg font-mono"
+                  />
+                </div>
+                
+                <Button
+                  onClick={handleJoinSession}
+                  className="w-full"
+                  disabled={!sessionCode || joinSessionMutation.isPending}
+                >
+                  {joinSessionMutation.isPending ? "Entrando..." : "Entrar na Sessão"}
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
         </div>
+        
+        <BottomNavigation />
       </div>
     );
   }
@@ -275,20 +262,14 @@ const MatchingPage = () => {
   if (mode === 'session') {
     return (
       <div className="min-h-screen bg-background">
-        {/* Header */}
+        <AppHeader />
+        
+        {/* Session Info */}
         <div className="bg-card border-b p-4">
-          <div className="flex items-center justify-between">
-            <Button
-              variant="ghost"
-              onClick={() => navigate('/')}
-            >
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Sair
-            </Button>
-            
+          <div className="flex items-center justify-center">
             {session && (
               <div className="text-center">
-                <div className="text-sm text-muted-foreground">
+                <div className="text-sm text-muted-foreground mb-2">
                   Participantes: {session.participants?.length || 0}/2
                 </div>
                 {session.participants && session.participants.length < 2 && (
@@ -296,7 +277,6 @@ const MatchingPage = () => {
                     variant="outline"
                     size="sm"
                     onClick={copyInviteLink}
-                    className="mt-1"
                   >
                     <Copy className="w-4 h-4 mr-2" />
                     {session.session_code}
@@ -304,13 +284,11 @@ const MatchingPage = () => {
                 )}
               </div>
             )}
-            
-            <div className="w-20" />
           </div>
         </div>
 
         {/* Content */}
-        <div className="flex-1 p-4">
+        <div className="flex-1 p-4 pb-24">
           {session && session.participants && session.participants.length < 2 ? (
             <div className="max-w-md mx-auto text-center pt-20">
               <Users className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
@@ -393,6 +371,8 @@ const MatchingPage = () => {
           )}
         </div>
 
+        <BottomNavigation />
+
         {/* Match Modal */}
         <Dialog open={showMatchModal} onOpenChange={setShowMatchModal}>
           <DialogContent className="max-w-sm mx-auto">
@@ -416,7 +396,7 @@ const MatchingPage = () => {
                 <Button
                   onClick={() => {
                     setShowMatchModal(false);
-                    navigate(`/restaurant/${currentMatch.restaurants.id}`);
+                    window.location.href = `/restaurant/${currentMatch.restaurants.id}`;
                   }}
                   className="w-full"
                 >
