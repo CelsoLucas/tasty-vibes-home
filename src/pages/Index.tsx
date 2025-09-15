@@ -32,33 +32,53 @@ const Index = () => {
   const transformedRestaurants = useMemo(() => {
     if (!restaurants) return [];
     
-    return restaurants.map(restaurant => ({
+    return restaurants.map((restaurant, index) => ({
       id: restaurant.id,
       name: restaurant.name,
-      image: imageMap[restaurant.image_url as keyof typeof imageMap] || restaurant1,
+      image: restaurant.image_url === '/placeholder.svg' 
+        ? Object.values(imageMap)[index % Object.values(imageMap).length]
+        : restaurant.image_url,
       rating: restaurant.rating,
       category: restaurant.category,
       distance: restaurant.distance,
     }));
   }, [restaurants]);
 
-  // Organizar restaurantes por seções
+  // Organizar restaurantes por seções baseado nas categorias
   const restaurantSections = useMemo(() => {
     if (transformedRestaurants.length === 0) return { bestInCity: [], bestInRegion: [], forYou: [], newRestaurants: [], topOfWeek: [] };
 
-    // Dividir em grupos de 4
-    const chunkSize = 4;
-    const chunks = [];
-    for (let i = 0; i < transformedRestaurants.length; i += chunkSize) {
-      chunks.push(transformedRestaurants.slice(i, i + chunkSize));
-    }
+    // Filtrar por rating alto para "Melhores da Cidade"
+    const bestInCity = transformedRestaurants
+      .filter(r => r.rating >= 4.5)
+      .slice(0, 4);
+
+    // Filtrar por categorias específicas para "Melhores da Região"
+    const bestInRegion = transformedRestaurants
+      .filter(r => ['Brasileira', 'Regional', 'Churrasco'].includes(r.category))
+      .slice(0, 4);
+
+    // Filtrar por rating médio-alto para "Para Você"
+    const forYou = transformedRestaurants
+      .filter(r => r.rating >= 4.0 && r.rating < 4.5)
+      .slice(0, 4);
+
+    // Filtrar por categorias modernas para "Novos Restaurantes"
+    const newRestaurants = transformedRestaurants
+      .filter(r => ['Fast Food', 'Café', 'Açaí'].includes(r.category))
+      .slice(0, 4);
+
+    // Filtrar por categorias internacionais para "Top da Semana"
+    const topOfWeek = transformedRestaurants
+      .filter(r => ['Italiana', 'Japonesa', 'Pizza'].includes(r.category))
+      .slice(0, 4);
 
     return {
-      bestInCity: chunks[0] || [],
-      bestInRegion: chunks[1] || [],
-      forYou: chunks[2] || [],
-      newRestaurants: chunks[3] || [],
-      topOfWeek: chunks[4] || [],
+      bestInCity,
+      bestInRegion,
+      forYou,
+      newRestaurants,
+      topOfWeek,
     };
   }, [transformedRestaurants]);
 
