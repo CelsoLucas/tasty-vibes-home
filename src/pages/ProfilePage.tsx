@@ -4,7 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
+import { AnimatedInput } from "@/components/ui/animated-input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { AppHeader } from "@/components/AppHeader";
@@ -698,12 +698,11 @@ const ProfilePage = () => {
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="display_name">Nome de Exibição</Label>
-              <Input
+              <AnimatedInput
                 id="display_name"
+                label="Nome de Exibição"
                 value={editForm.display_name}
                 onChange={(e) => setEditForm(prev => ({ ...prev, display_name: e.target.value }))}
-                placeholder="Seu nome de exibição"
               />
             </div>
             
@@ -740,73 +739,40 @@ const ProfilePage = () => {
           
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
-              <Label htmlFor="personal_email">Email</Label>
-              <Input
+              <AnimatedInput
                 id="personal_email"
                 type="email"
+                label="Email"
                 value={personalInfoForm.email}
                 onChange={(e) => setPersonalInfoForm(prev => ({ ...prev, email: e.target.value }))}
-                placeholder="Seu email"
                 disabled={!isEditingPersonalInfo}
               />
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="personal_password">Nova Senha</Label>
-              <div className="relative">
-                <Input
-                  id="personal_password"
-                  type={showNewPassword ? "text" : "password"}
-                  value={personalInfoForm.newPassword}
-                  onChange={(e) => setPersonalInfoForm(prev => ({ ...prev, newPassword: e.target.value }))}
-                  placeholder="Digite uma nova senha"
-                  disabled={!isEditingPersonalInfo}
-                  className="pr-10"
-                />
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                  onClick={() => setShowNewPassword(!showNewPassword)}
-                  disabled={!isEditingPersonalInfo}
-                >
-                  {showNewPassword ? (
-                    <EyeOff className="h-4 w-4 text-muted-foreground" />
-                  ) : (
-                    <Eye className="h-4 w-4 text-muted-foreground" />
-                  )}
-                </Button>
-              </div>
+              <AnimatedInput
+                id="personal_password"
+                type={showNewPassword ? "text" : "password"}
+                label="Nova Senha"
+                value={personalInfoForm.newPassword}
+                onChange={(e) => setPersonalInfoForm(prev => ({ ...prev, newPassword: e.target.value }))}
+                disabled={!isEditingPersonalInfo}
+                rightIcon={showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                onRightIconClick={() => setShowNewPassword(!showNewPassword)}
+              />
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="current_password">Senha Atual</Label>
-              <div className="relative">
-                <Input
-                  id="current_password"
-                  type={showCurrentPassword ? "text" : "password"}
-                  value={personalInfoForm.currentPassword}
-                  onChange={(e) => setPersonalInfoForm(prev => ({ ...prev, currentPassword: e.target.value }))}
-                  placeholder="Digite sua senha atual"
-                  disabled={!isEditingPersonalInfo}
-                  className="pr-10"
-                />
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                  onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                  disabled={!isEditingPersonalInfo}
-                >
-                  {showCurrentPassword ? (
-                    <EyeOff className="h-4 w-4 text-muted-foreground" />
-                  ) : (
-                    <Eye className="h-4 w-4 text-muted-foreground" />
-                  )}
-                </Button>
-              </div>
+              <AnimatedInput
+                id="current_password"
+                type={showCurrentPassword ? "text" : "password"}
+                label="Senha Atual"
+                value={personalInfoForm.currentPassword}
+                onChange={(e) => setPersonalInfoForm(prev => ({ ...prev, currentPassword: e.target.value }))}
+                disabled={!isEditingPersonalInfo}
+                rightIcon={showCurrentPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                onRightIconClick={() => setShowCurrentPassword(!showCurrentPassword)}
+              />
             </div>
           </div>
           

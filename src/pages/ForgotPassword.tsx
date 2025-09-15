@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { AnimatedInput } from "@/components/ui/animated-input";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Mail, ArrowLeft } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -44,23 +43,15 @@ const ForgotPassword = () => {
             {!isSubmitted ? (
               <form onSubmit={handleSubmit} className="space-y-4">
                 {/* Email Field */}
-                <div className="space-y-2">
-                  <Label htmlFor="email" className="text-sm font-medium text-card-foreground">
-                    E-mail
-                  </Label>
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      id="email"
-                      type="email"
-                      placeholder="seu@email.com"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className="pl-10 transition-all duration-200 focus:ring-2 focus:ring-primary/20"
-                      required
-                    />
-                  </div>
-                </div>
+                <AnimatedInput
+                  id="email"
+                  type="email"
+                  label="E-mail"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  leftIcon={<Mail className="h-4 w-4" />}
+                  required
+                />
 
                 {/* Submit Button */}
                 <Button 

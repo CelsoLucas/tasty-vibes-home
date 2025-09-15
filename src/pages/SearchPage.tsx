@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { AnimatedInput } from "@/components/ui/animated-input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Search, Filter, MapPin, Star } from "lucide-react";
@@ -82,13 +82,13 @@ const SearchPage = () => {
       {/* Campo de busca */}
       <div className="p-4 bg-background border-b border-border">
         <div className="flex gap-3">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Buscar restaurantes, pratos..."
+          <div className="flex-1">
+            <AnimatedInput
+              label="Buscar restaurantes, pratos..."
               value={searchQuery}
               onChange={(e) => handleSearch(e.target.value)}
-              className="pl-10 pr-4 h-12 bg-card border-border"
+              leftIcon={<Search className="h-4 w-4" />}
+              size="sm"
             />
           </div>
           <Button
