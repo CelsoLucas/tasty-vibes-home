@@ -8,38 +8,17 @@ export interface Category {
   display_order: number;
 }
 
-// Mapa de emojis para categorias
-const categoryEmojis: Record<string, string> = {
-  'Fast Food': '🍔',
-  'Pizza': '🍕',
-  'Italiana': '🍝',
-  'Japonesa': '🍱',
-  'Brasileira': '🇧🇷',
-  'Churrasco': '🥩',
-  'Café': '☕',
-  'Açaí': '🫐',
-  'Regional': '🏠'
-};
-
 const fetchCategories = async (): Promise<Category[]> => {
-  // Por enquanto, buscar categorias distintas diretamente da tabela restaurants
-  const { data: restaurantData, error: restaurantError } = await (supabase as any)
-    .from('restaurants')
-    .select('category')
-    .order('category');
+  const { data, error } = await (supabase as any)
+    .from('restaurant_categories')
+    .select('*')
+    .order('display_order');
 
-  if (restaurantError) {
-    throw restaurantError;
+  if (error) {
+    throw error;
   }
 
-  // Criar categorias únicas
-  const uniqueCategories = [...new Set(restaurantData?.map((r: any) => r.category) || [])];
-  return uniqueCategories.map((category: string, index) => ({
-    id: category.toLowerCase().replace(/\s+/g, '_'),
-    name: category,
-    emoji: categoryEmojis[category] || '🍽️',
-    display_order: index + 1
-  }));
+  return data || [];
 };
 
 export const useCategories = () => {
