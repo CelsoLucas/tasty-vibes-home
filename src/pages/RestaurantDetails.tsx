@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { ArrowLeft, Heart, Star, MapPin, Phone, Share, MessageCircle, DollarSign } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import { AppHeader } from "@/components/AppHeader";
@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { useRestaurant, useRestaurantReviews, useRestaurantMenu, useRestaurantStats } from "@/hooks/useRestaurants";
 
 // Import restaurant images
@@ -78,6 +79,8 @@ export default function RestaurantProfile() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [isFavorite, setIsFavorite] = useState(false);
+  const [activeCategory, setActiveCategory] = useState<string>("");
+  const sectionRefs = useRef<{ [key: string]: HTMLElement | null }>({});
   const { data: restaurant, isLoading, error } = useRestaurant(id || "");
   const { data: reviews } = useRestaurantReviews(id || "");
   const { data: menu } = useRestaurantMenu(id || "");
@@ -157,6 +160,46 @@ export default function RestaurantProfile() {
     // TODO: Implementar página de todas as avaliações
     console.log("Ver todas as avaliações");
   };
+
+  const scrollToCategory = (categoryId: string) => {
+    const element = sectionRefs.current[categoryId];
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      setActiveCategory(categoryId);
+    }
+  };
+
+  // Initialize first category as active
+  useEffect(() => {
+    if (menu && menu.length > 0 && !activeCategory) {
+      setActiveCategory(menu[0].id);
+    }
+  }, [menu, activeCategory]);
+
+  // Scroll spy to update active category
+  useEffect(() => {
+    const handleScroll = () => {
+      if (!menu) return;
+      
+      const scrollPosition = window.scrollY + 200; // Offset for header
+      
+      for (const category of menu) {
+        const element = sectionRefs.current[category.id];
+        if (element) {
+          const elementTop = element.offsetTop;
+          const elementBottom = elementTop + element.offsetHeight;
+          
+          if (scrollPosition >= elementTop && scrollPosition < elementBottom) {
+            setActiveCategory(category.id);
+            break;
+          }
+        }
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [menu]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -268,39 +311,74 @@ export default function RestaurantProfile() {
           <h2 className="text-lg font-semibold text-foreground mb-4">Cardápio</h2>
           
           {menu && menu.length > 0 ? (
-            <div className="space-y-6">
-              {menu.map((category) => (
-                <div key={category.id}>
-                  <h3 className="text-md font-medium text-foreground mb-3">{category.name}</h3>
-                  <div className="space-y-3">
-                    {category.menu_items?.map((item) => (
-                      <Card key={item.id} className="border-0 shadow-sm">
-                        <CardContent className="p-3">
-                          <div className="flex gap-3">
-                            {item.image_url && (
-                              <img 
-                                src={imageMap[item.image_url as keyof typeof imageMap] || restaurant1}
-                                alt={item.name}
-                                className="w-16 h-16 object-cover rounded-lg"
-                              />
-                            )}
-                            <div className="flex-1">
-                              <h4 className="font-medium text-foreground">{item.name}</h4>
-                              {item.description && (
-                                <p className="text-sm text-muted-foreground">{item.description}</p>
-                              )}
-                              <p className="text-primary font-semibold mt-1">
-                                R$ {item.price.toFixed(2).replace('.', ',')}
-                              </p>
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
+            <>
+              {/* Category Navigation */}
+              <div className="mb-6">
+                <ScrollArea className="w-full whitespace-nowrap">
+                  <div className="flex gap-2 pb-4">
+                    {menu.map((category) => (
+                      <Button
+                        key={category.id}
+                        variant={activeCategory === category.id ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => scrollToCategory(category.id)}
+                        className="flex-shrink-0 min-w-fit"
+                      >
+                        {category.name}
+                      </Button>
                     ))}
                   </div>
-                </div>
-              ))}
-            </div>
+                  <ScrollBar orientation="horizontal" />
+                </ScrollArea>
+              </div>
+
+              {/* Menu Sections */}
+              <div className="space-y-8">
+                {menu.map((category) => (
+                  <section
+                    key={category.id}
+                    id={`category-${category.id}`}
+                    ref={(el) => (sectionRefs.current[category.id] = el)}
+                    className="scroll-mt-32"
+                  >
+                    <div className="sticky top-0 bg-background z-10 pb-2 mb-4">
+                      <h3 className="text-lg font-semibold text-foreground">{category.name}</h3>
+                      <p className="text-sm text-muted-foreground">
+                        {category.menu_items?.length || 0} {category.menu_items?.length === 1 ? 'item' : 'itens'}
+                      </p>
+                    </div>
+                    <div className="space-y-3">
+                      {category.menu_items?.map((item) => (
+                        <Card key={item.id} className="border-0 shadow-sm hover:shadow-md transition-shadow">
+                          <CardContent className="p-4">
+                            <div className="flex gap-4">
+                              <div className="flex-1">
+                                <h4 className="font-semibold text-foreground mb-1">{item.name}</h4>
+                                {item.description && (
+                                  <p className="text-sm text-muted-foreground mb-2 line-clamp-2">{item.description}</p>
+                                )}
+                                <p className="text-lg font-bold text-primary">
+                                  R$ {item.price.toFixed(2).replace('.', ',')}
+                                </p>
+                              </div>
+                              {item.image_url && (
+                                <div className="flex-shrink-0">
+                                  <img 
+                                    src={imageMap[item.image_url as keyof typeof imageMap] || restaurant1}
+                                    alt={item.name}
+                                    className="w-20 h-20 object-cover rounded-lg"
+                                  />
+                                </div>
+                              )}
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  </section>
+                ))}
+              </div>
+            </>
           ) : (
             <div className="space-y-6">
               <div>
