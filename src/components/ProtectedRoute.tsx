@@ -16,18 +16,44 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const [profileLoading, setProfileLoading] = useState(false);
+
+  const fetchUserProfile = async (userId: string) => {
+    try {
+      setProfileLoading(true);
+      const { data, error } = await (supabase as any)
+        .from('profiles')
+        .select('user_type')
+        .eq('id', userId)
+        .single();
+
+      if (error) {
+        console.error('Error fetching user profile:', error);
+        // Default to customer if profile not found
+        setUserProfile({ user_type: 'customer' });
+      } else {
+        setUserProfile(data);
+      }
+    } catch (error) {
+      console.error('Error fetching user profile:', error);
+      setUserProfile({ user_type: 'customer' });
+    } finally {
+      setProfileLoading(false);
+    }
+  };
 
   useEffect(() => {
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      (event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
         
         if (session?.user) {
-          // For now, determine user type from email or default to customer
-          const userType = session.user.email?.includes('restaurant') ? 'restaurant' : 'customer';
-          setUserProfile({ user_type: userType });
+          // Fetch user profile from database
+          setTimeout(() => {
+            fetchUserProfile(session.user.id);
+          }, 0);
         } else {
           setUserProfile(null);
         }
@@ -37,23 +63,21 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
     );
 
     // Check for existing session
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
       
       if (session?.user) {
-        // For now, determine user type from email or default to customer
-        const userType = session.user.email?.includes('restaurant') ? 'restaurant' : 'customer';
-        setUserProfile({ user_type: userType });
+        fetchUserProfile(session.user.id);
+      } else {
+        setLoading(false);
       }
-      
-      setLoading(false);
     });
 
     return () => subscription.unsubscribe();
   }, []);
 
-  if (loading) {
+  if (loading || profileLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
