@@ -19,25 +19,15 @@ const Index = () => {
   const navigate = useNavigate();
   const { data: restaurants, isLoading, error } = useRestaurants();
 
-  // Map das imagens locais
-  const imageMap = {
-    '/src/assets/restaurant-1.jpg': restaurant1,
-    '/src/assets/restaurant-2.jpg': restaurant2,
-    '/src/assets/restaurant-3.jpg': restaurant3,
-    '/src/assets/restaurant-4.jpg': restaurant4,
-    '/src/assets/restaurant-5.jpg': restaurant5,
-  };
 
-  // Transformar dados do banco para o formato esperado pelos componentes
+  // Transform database data to component format
   const transformedRestaurants = useMemo(() => {
     if (!restaurants) return [];
     
-    return restaurants.map((restaurant, index) => ({
+    return restaurants.map(restaurant => ({
       id: restaurant.id,
       name: restaurant.name,
-      image: restaurant.image_url === '/placeholder.svg' 
-        ? Object.values(imageMap)[index % Object.values(imageMap).length]
-        : restaurant.image_url,
+      image: restaurant.image_url || '/placeholder.svg',
       rating: restaurant.rating,
       category: restaurant.category,
       distance: restaurant.distance,

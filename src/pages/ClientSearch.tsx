@@ -10,32 +10,6 @@ import { AppHeader } from "@/components/AppHeader";
 import { useCategories } from "@/hooks/useCategories";
 import { useRestaurants } from "@/hooks/useRestaurants";
 
-const mockResults = [
-  {
-    id: 1,
-    name: "Burger Palace",
-    category: "Lanches",
-    rating: 4.5,
-    distance: "0.8 km",
-    image: "/placeholder.svg"
-  },
-  {
-    id: 2,
-    name: "Pasta House",
-    category: "Massas", 
-    rating: 4.2,
-    distance: "1.2 km",
-    image: "/placeholder.svg"
-  },
-  {
-    id: 3,
-    name: "Sushi Express",
-    category: "Japonês",
-    rating: 4.8,
-    distance: "2.1 km", 
-    image: "/placeholder.svg"
-  }
-];
 
 const SearchPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
