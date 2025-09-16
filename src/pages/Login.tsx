@@ -18,27 +18,6 @@ const Login = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  // Função para verificar se o email existe no banco de dados
-  const checkEmailExists = async (email: string) => {
-    if (!email) return false;
-    
-    try {
-      const { data, error } = await (supabase as any)
-        .from('profiles')
-        .select('email')
-        .eq('email', email)
-        .maybeSingle();
-      
-      if (error) {
-        console.error('Error checking email:', error);
-        return true; // Em caso de erro, assumir que existe para não bloquear
-      }
-      
-      return data !== null; // Se data existe, o email foi encontrado
-    } catch {
-      return true; // Em caso de erro, assumir que existe
-    }
-  };
 
   // Validação do email sem verificação em tempo real
   const handleEmailChange = (value: string) => {
@@ -65,13 +44,23 @@ const Login = () => {
       });
 
       if (error) {
-        // Verificar tipo específico de erro
+        // Para credenciais inválidas, primeiro verificamos se o email existe
         if (error.message.includes('Invalid login credentials')) {
-          // Verificar se o email existe no banco de dados
-          const emailExists = await checkEmailExists(email);
-          if (!emailExists) {
-            setEmailError("Este email não está cadastrado");
-          } else {
+          try {
+            // Tentativa de verificar se o email existe com uma senha obviamente errada
+            const { error: checkError } = await supabase.auth.signInWithPassword({
+              email,
+              password: '__invalid_password_check__'
+            });
+            
+            // Se ainda der "Invalid login credentials", o email existe (mas senha errada)
+            if (checkError?.message.includes('Invalid login credentials')) {
+              setPasswordError("Senha incorreta");
+            } else {
+              // Se der erro diferente, provavelmente email não existe
+              setEmailError("Este email não está cadastrado");
+            }
+          } catch {
             setPasswordError("Senha incorreta");
           }
         } else if (error.message.includes('Email not confirmed')) {

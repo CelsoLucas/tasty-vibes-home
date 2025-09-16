@@ -25,18 +25,20 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
         .from('profiles')
         .select('user_type')
         .eq('id', userId)
-        .single();
+        .maybeSingle();
 
       if (error) {
         console.error('Error fetching user profile:', error);
-        // Default to customer if profile not found
-        setUserProfile({ user_type: 'customer' });
-      } else {
+        setUserProfile(null);
+      } else if (data) {
         setUserProfile(data);
+      } else {
+        // No profile found - user needs to complete registration
+        setUserProfile(null);
       }
     } catch (error) {
       console.error('Error fetching user profile:', error);
-      setUserProfile({ user_type: 'customer' });
+      setUserProfile(null);
     } finally {
       setProfileLoading(false);
     }
@@ -86,6 +88,12 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   }
 
   if (!user || !session) {
+    return <Navigate to="/login" replace />;
+  }
+
+  // If user is authenticated but has no profile, redirect to login
+  // This handles users who exist in auth.users but not in profiles
+  if (!userProfile) {
     return <Navigate to="/login" replace />;
   }
 
