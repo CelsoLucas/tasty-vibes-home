@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { Navigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { User, Session } from '@supabase/supabase-js';
@@ -7,40 +7,33 @@ interface ProtectedRouteProps {
   children: React.ReactNode;
 }
 
-interface UserProfile {
-  user_type: string;
-}
-
 export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
-  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
-  const [profileLoading, setProfileLoading] = useState(false);
+  const [userType, setUserType] = useState<string | null>(null);
+  const hasFetchedProfileRef = useRef(false);
 
   const fetchUserProfile = async (userId: string) => {
+    if (hasFetchedProfileRef.current) return;
+    hasFetchedProfileRef.current = true;
+
     try {
-      setProfileLoading(true);
-      const { data, error } = await (supabase as any)
+      const { data, error } = await supabase
         .from('profiles')
         .select('user_type')
         .eq('id', userId)
         .maybeSingle();
 
-      if (error) {
-        console.error('Error fetching user profile:', error);
-        setUserProfile(null);
-      } else if (data) {
-        setUserProfile(data);
+      if (data?.user_type) {
+        setUserType(data.user_type);
       } else {
-        // No profile found - user needs to complete registration
-        setUserProfile(null);
+        // Fallback to customer if no profile found
+        setUserType('customer');
       }
     } catch (error) {
       console.error('Error fetching user profile:', error);
-      setUserProfile(null);
-    } finally {
-      setProfileLoading(false);
+      setUserType('customer'); // Safe fallback
     }
   };
 
@@ -52,15 +45,23 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
         setUser(session?.user ?? null);
         
         if (session?.user) {
-          // Fetch user profile from database
-          setTimeout(() => {
-            fetchUserProfile(session.user.id);
-          }, 0);
+          // Prioritize user_metadata.user_type
+          const metadataUserType = session.user.user_metadata?.user_type;
+          if (metadataUserType) {
+            setUserType(metadataUserType);
+            setLoading(false);
+          } else {
+            // Fallback to profiles table query (only once)
+            setTimeout(() => {
+              fetchUserProfile(session.user.id);
+              setLoading(false);
+            }, 0);
+          }
         } else {
-          setUserProfile(null);
+          setUserType(null);
+          hasFetchedProfileRef.current = false;
+          setLoading(false);
         }
-        
-        setLoading(false);
       }
     );
 
@@ -70,7 +71,14 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
       setUser(session?.user ?? null);
       
       if (session?.user) {
-        fetchUserProfile(session.user.id);
+        const metadataUserType = session.user.user_metadata?.user_type;
+        if (metadataUserType) {
+          setUserType(metadataUserType);
+          setLoading(false);
+        } else {
+          fetchUserProfile(session.user.id);
+          setLoading(false);
+        }
       } else {
         setLoading(false);
       }
@@ -79,7 +87,7 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
     return () => subscription.unsubscribe();
   }, []);
 
-  if (loading || profileLoading) {
+  if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -91,37 +99,30 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
     return <Navigate to="/login" replace />;
   }
 
-  // If user is authenticated but has no profile, redirect to login
-  // This handles users who exist in auth.users but not in profiles
-  if (!userProfile) {
-    return <Navigate to="/login" replace />;
+  // Use userType from metadata or profiles, default to customer if still null
+  const effectiveUserType = userType || 'customer';
+  const currentPath = window.location.pathname;
+  
+  // If customer tries to access restaurant management routes, redirect to client home
+  if (effectiveUserType === 'customer') {
+    const isRestaurantDetail = /^\/restaurant\/[^/]+$/.test(currentPath);
+    const isRestaurantAdminRoute = currentPath.startsWith('/restaurant/') && !isRestaurantDetail;
+    if (isRestaurantAdminRoute) {
+      return <Navigate to="/client/home" replace />;
+    }
   }
-
-  // Smart routing based on user type
-  if (userProfile) {
-    const currentPath = window.location.pathname;
-    
-    // If customer tries to access restaurant management routes, redirect to client home
-    if (userProfile.user_type === 'customer') {
-      const isRestaurantDetail = /^\/restaurant\/[^/]+$/.test(currentPath);
-      const isRestaurantAdminRoute = currentPath.startsWith('/restaurant/') && !isRestaurantDetail;
-      if (isRestaurantAdminRoute) {
-        return <Navigate to="/client/home" replace />;
-      }
-    }
-    
-    // If restaurant tries to access client routes, redirect to restaurant home
-    if (userProfile.user_type === 'restaurant' && currentPath.startsWith('/client/')) {
+  
+  // If restaurant tries to access client routes, redirect to restaurant home
+  if (effectiveUserType === 'restaurant' && currentPath.startsWith('/client/')) {
+    return <Navigate to="/restaurant/home" replace />;
+  }
+  
+  // Redirect root path based on user type
+  if (currentPath === '/') {
+    if (effectiveUserType === 'restaurant') {
       return <Navigate to="/restaurant/home" replace />;
-    }
-    
-    // Redirect root path based on user type
-    if (currentPath === '/') {
-      if (userProfile.user_type === 'restaurant') {
-        return <Navigate to="/restaurant/home" replace />;
-      } else {
-        return <Navigate to="/client/home" replace />;
-      }
+    } else {
+      return <Navigate to="/client/home" replace />;
     }
   }
 

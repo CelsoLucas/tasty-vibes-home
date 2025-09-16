@@ -41,7 +41,14 @@ export const AuthRoute = ({ children }: AuthRouteProps) => {
   }
 
   if (user && session) {
-    return <Navigate to="/" replace />;
+    // Redirect based on user type from metadata
+    const userType = session.user.user_metadata?.user_type || 'customer';
+    
+    if (userType === 'restaurant') {
+      return <Navigate to="/restaurant/home" replace />;
+    } else {
+      return <Navigate to="/client/home" replace />;
+    }
   }
 
   return <>{children}</>;

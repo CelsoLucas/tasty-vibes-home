@@ -93,14 +93,13 @@ const Login = () => {
           description: "Bem-vindo de volta!",
         });
         
-        // Redirecionar baseado no tipo de usuário
-        if (profileData.user_type === 'restaurant') {
+        // Redirecionar baseado no tipo de usuário do metadata primeiro
+        const userType = data.user?.user_metadata?.user_type || profileData.user_type || 'customer';
+        
+        if (userType === 'restaurant') {
           navigate('/restaurant/home');
-        } else if (profileData.user_type === 'customer') {
-          navigate('/client/home');
         } else {
-          // Fallback para usuários sem tipo definido
-          navigate('/');
+          navigate('/client/home');
         }
       }
     } catch (error) {
