@@ -8,10 +8,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { useCreateMenuItem, useUpdateMenuItem } from "@/hooks/useRestaurants";
-import { MenuItem, MenuCategory } from "@/hooks/useRestaurants";
+import { MenuItem } from "@/hooks/useRestaurants";
 import { supabase } from "@/integrations/supabase/client";
 import { Upload, X } from "lucide-react";
 
@@ -19,8 +18,7 @@ const itemSchema = z.object({
   name: z.string().min(2, "Nome deve ter pelo menos 2 caracteres"),
   description: z.string().optional(),
   price: z.number().min(0.01, "Preço deve ser maior que zero"),
-  categoryId: z.string().min(1, "Selecione uma categoria"),
-  isAvailable: z.boolean().optional()
+  isAvailable: z.boolean().default(true)
 });
 
 type ItemFormData = z.infer<typeof itemSchema>;
@@ -28,18 +26,14 @@ type ItemFormData = z.infer<typeof itemSchema>;
 interface MenuItemFormDialogProps {
   children: React.ReactNode;
   restaurantId: string;
-  categories: MenuCategory[];
   item?: MenuItem;
-  defaultCategoryId?: string;
   onSuccess?: () => void;
 }
 
 export const MenuItemFormDialog = ({ 
   children, 
   restaurantId, 
-  categories,
-  item, 
-  defaultCategoryId,
+  item,
   onSuccess 
 }: MenuItemFormDialogProps) => {
   const [open, setOpen] = useState(false);
@@ -57,7 +51,6 @@ export const MenuItemFormDialog = ({
       name: item?.name || "",
       description: item?.description || "",
       price: item?.price || 0,
-      categoryId: item?.category_id || defaultCategoryId || "",
       isAvailable: item?.is_available ?? true
     }
   });
@@ -154,7 +147,6 @@ export const MenuItemFormDialog = ({
       } else {
         await createMutation.mutateAsync({
           restaurantId,
-          categoryId: data.categoryId,
           name: data.name,
           description: data.description,
           price: data.price,
@@ -240,27 +232,6 @@ export const MenuItemFormDialog = ({
               <p className="text-sm text-destructive mt-1">{errors.price.message}</p>
             )}
           </div>
-          
-          {!isEditing && (
-            <div>
-              <Label htmlFor="categoryId">Categoria</Label>
-              <Select onValueChange={(value) => setValue("categoryId", value)} defaultValue={defaultCategoryId}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione uma categoria" />
-                </SelectTrigger>
-                <SelectContent>
-                  {categories.map((category) => (
-                    <SelectItem key={category.id} value={category.id}>
-                      {category.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {errors.categoryId && (
-                <p className="text-sm text-destructive mt-1">{errors.categoryId.message}</p>
-              )}
-            </div>
-          )}
           
           <div>
             <Label>Imagem do Item</Label>

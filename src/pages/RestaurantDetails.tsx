@@ -171,35 +171,10 @@ export default function RestaurantProfile() {
 
   // Initialize first category as active
   useEffect(() => {
-    if (menu && menu.length > 0 && !activeCategory) {
-      setActiveCategory(menu[0].id);
+    if (menu && menu.items && menu.items.length > 0 && !activeCategory) {
+      setActiveCategory('menu-section');
     }
   }, [menu, activeCategory]);
-
-  // Scroll spy to update active category
-  useEffect(() => {
-    const handleScroll = () => {
-      if (!menu) return;
-      
-      const scrollPosition = window.scrollY + 200; // Offset for header
-      
-      for (const category of menu) {
-        const element = sectionRefs.current[category.id];
-        if (element) {
-          const elementTop = element.offsetTop;
-          const elementBottom = elementTop + element.offsetHeight;
-          
-          if (scrollPosition >= elementTop && scrollPosition < elementBottom) {
-            setActiveCategory(category.id);
-            break;
-          }
-        }
-      }
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [menu]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -310,75 +285,42 @@ export default function RestaurantProfile() {
         <div className="p-4">
           <h2 className="text-lg font-semibold text-foreground mb-4">Cardápio</h2>
           
-          {menu && menu.length > 0 ? (
-            <>
-              {/* Category Navigation */}
-              <div className="mb-6">
-                <ScrollArea className="w-full whitespace-nowrap">
-                  <div className="flex gap-2 pb-4">
-                    {menu.map((category) => (
-                      <Button
-                        key={category.id}
-                        variant={activeCategory === category.id ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => scrollToCategory(category.id)}
-                        className="flex-shrink-0 min-w-fit"
-                      >
-                        {category.name}
-                      </Button>
-                    ))}
-                  </div>
-                  <ScrollBar orientation="horizontal" />
-                </ScrollArea>
-              </div>
-
-              {/* Menu Sections */}
-              <div className="space-y-8">
-                {menu.map((category) => (
-                  <section
-                    key={category.id}
-                    id={`category-${category.id}`}
-                    ref={(el) => (sectionRefs.current[category.id] = el)}
-                    className="scroll-mt-32"
-                  >
-                    <div className="sticky top-0 bg-background z-10 pb-2 mb-4">
-                      <h3 className="text-lg font-semibold text-foreground">{category.name}</h3>
-                      <p className="text-sm text-muted-foreground">
-                        {category.menu_items?.length || 0} {category.menu_items?.length === 1 ? 'item' : 'itens'}
-                      </p>
+          {menu && menu.items && menu.items.length > 0 ? (
+            <div className="space-y-3">
+              {menu.items.map((item) => (
+                <Card key={item.id} className={`border-0 shadow-sm hover:shadow-md transition-shadow ${!item.is_available ? 'opacity-60' : ''}`}>
+                  <CardContent className="p-4">
+                    <div className="flex gap-4">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <h4 className="font-semibold text-foreground">{item.name}</h4>
+                          {!item.is_available && (
+                            <Badge variant="secondary" className="text-xs">
+                              Indisponível
+                            </Badge>
+                          )}
+                        </div>
+                        {item.description && (
+                          <p className="text-sm text-muted-foreground mb-2 line-clamp-2">{item.description}</p>
+                        )}
+                        <p className="text-lg font-bold text-primary">
+                          R$ {Number(item.price).toFixed(2).replace('.', ',')}
+                        </p>
+                      </div>
+                      {item.image_url && (
+                        <div className="flex-shrink-0">
+                          <img 
+                            src={imageMap[item.image_url as keyof typeof imageMap] || restaurant1}
+                            alt={item.name}
+                            className="w-20 h-20 object-cover rounded-lg"
+                          />
+                        </div>
+                      )}
                     </div>
-                    <div className="space-y-3">
-                      {category.menu_items?.map((item) => (
-                        <Card key={item.id} className="border-0 shadow-sm hover:shadow-md transition-shadow">
-                          <CardContent className="p-4">
-                            <div className="flex gap-4">
-                              <div className="flex-1">
-                                <h4 className="font-semibold text-foreground mb-1">{item.name}</h4>
-                                {item.description && (
-                                  <p className="text-sm text-muted-foreground mb-2 line-clamp-2">{item.description}</p>
-                                )}
-                                <p className="text-lg font-bold text-primary">
-                                  R$ {item.price.toFixed(2).replace('.', ',')}
-                                </p>
-                              </div>
-                              {item.image_url && (
-                                <div className="flex-shrink-0">
-                                  <img 
-                                    src={imageMap[item.image_url as keyof typeof imageMap] || restaurant1}
-                                    alt={item.name}
-                                    className="w-20 h-20 object-cover rounded-lg"
-                                  />
-                                </div>
-                              )}
-                            </div>
-                          </CardContent>
-                        </Card>
-                      ))}
-                    </div>
-                  </section>
-                ))}
-              </div>
-            </>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
           ) : (
             <div className="space-y-6">
               <div>

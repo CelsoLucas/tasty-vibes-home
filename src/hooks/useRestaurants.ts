@@ -32,24 +32,11 @@ export interface Review {
 export interface MenuItem {
   id: string;
   restaurant_id: string;
-  category_id: string;
   name: string;
   description: string | null;
   price: number;
   image_url: string | null;
   is_available: boolean;
-  menu_categories?: {
-    name: string;
-    display_order: number;
-  };
-}
-
-export interface MenuCategory {
-  id: string;
-  restaurant_id: string;
-  name: string;
-  display_order: number;
-  menu_items?: MenuItem[];
 }
 
 const fetchRestaurants = async (): Promise<Restaurant[]> => {
@@ -154,32 +141,22 @@ export const useRestaurantReviews = (restaurantId: string) => {
 export const useRestaurantMenu = (restaurantId: string) => {
   return useQuery({
     queryKey: ['restaurant-menu', restaurantId],
-    queryFn: async (): Promise<MenuCategory[]> => {
+    queryFn: async (): Promise<{ items: MenuItem[] }> => {
       try {
         const { data, error } = await (supabase as any)
-          .from('menu_categories')
-          .select(`
-            *,
-            menu_items (
-              id,
-              name,
-              description,
-              price,
-              image_url,
-              is_available
-            )
-          `)
+          .from('menu_items')
+          .select('*')
           .eq('restaurant_id', restaurantId)
-          .order('display_order', { ascending: true });
+          .order('name', { ascending: true });
 
         if (error) {
           throw new Error(error.message);
         }
 
-        return data || [];
+        return { items: data || [] };
       } catch (error) {
         console.error('Error fetching menu:', error);
-        return [];
+        return { items: [] };
       }
     },
     enabled: !!restaurantId,
@@ -222,85 +199,6 @@ export const useRestaurantStats = (restaurantId: string) => {
 };
 
 // Menu mutation hooks
-export const useCreateMenuCategory = () => {
-  const queryClient = useQueryClient();
-  
-  return useMutation({
-    mutationFn: async ({ restaurantId, name, displayOrder }: { 
-      restaurantId: string; 
-      name: string; 
-      displayOrder?: number; 
-    }) => {
-      const { data, error } = await (supabase as any)
-        .from('menu_categories')
-        .insert({
-          restaurant_id: restaurantId,
-          name,
-          display_order: displayOrder || 0
-        })
-        .select()
-        .single();
-      
-      if (error) throw error;
-      return data;
-    },
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['restaurant-menu', variables.restaurantId] });
-    }
-  });
-};
-
-export const useUpdateMenuCategory = () => {
-  const queryClient = useQueryClient();
-  
-  return useMutation({
-    mutationFn: async ({ 
-      categoryId, 
-      name, 
-      displayOrder,
-      restaurantId 
-    }: { 
-      categoryId: string; 
-      name: string; 
-      displayOrder?: number;
-      restaurantId: string;
-    }) => {
-      const { data, error } = await (supabase as any)
-        .from('menu_categories')
-        .update({
-          name,
-          display_order: displayOrder
-        })
-        .eq('id', categoryId)
-        .select()
-        .single();
-      
-      if (error) throw error;
-      return data;
-    },
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['restaurant-menu', variables.restaurantId] });
-    }
-  });
-};
-
-export const useDeleteMenuCategory = () => {
-  const queryClient = useQueryClient();
-  
-  return useMutation({
-    mutationFn: async ({ categoryId, restaurantId }: { categoryId: string; restaurantId: string }) => {
-      const { error } = await (supabase as any)
-        .from('menu_categories')
-        .delete()
-        .eq('id', categoryId);
-      
-      if (error) throw error;
-    },
-    onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['restaurant-menu', variables.restaurantId] });
-    }
-  });
-};
 
 export const useCreateMenuItem = () => {
   const queryClient = useQueryClient();
@@ -308,7 +206,6 @@ export const useCreateMenuItem = () => {
   return useMutation({
     mutationFn: async ({ 
       restaurantId, 
-      categoryId, 
       name, 
       description, 
       price, 
@@ -316,7 +213,6 @@ export const useCreateMenuItem = () => {
       imageUrl 
     }: { 
       restaurantId: string; 
-      categoryId: string;
       name: string; 
       description?: string; 
       price: number;
@@ -327,7 +223,6 @@ export const useCreateMenuItem = () => {
         .from('menu_items')
         .insert({
           restaurant_id: restaurantId,
-          category_id: categoryId,
           name,
           description,
           price,

@@ -58,44 +58,8 @@ export type Database = {
           },
         ]
       }
-      menu_categories: {
-        Row: {
-          created_at: string
-          display_order: number | null
-          id: string
-          name: string
-          restaurant_id: string
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          display_order?: number | null
-          id?: string
-          name: string
-          restaurant_id: string
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          display_order?: number | null
-          id?: string
-          name?: string
-          restaurant_id?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "menu_categories_restaurant_id_fkey"
-            columns: ["restaurant_id"]
-            isOneToOne: false
-            referencedRelation: "restaurants"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       menu_items: {
         Row: {
-          category_id: string
           created_at: string
           description: string | null
           id: string
@@ -107,7 +71,6 @@ export type Database = {
           updated_at: string
         }
         Insert: {
-          category_id: string
           created_at?: string
           description?: string | null
           id?: string
@@ -119,7 +82,6 @@ export type Database = {
           updated_at?: string
         }
         Update: {
-          category_id?: string
           created_at?: string
           description?: string | null
           id?: string
@@ -131,13 +93,6 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
-          {
-            foreignKeyName: "menu_items_category_id_fkey"
-            columns: ["category_id"]
-            isOneToOne: false
-            referencedRelation: "menu_categories"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "menu_items_restaurant_id_fkey"
             columns: ["restaurant_id"]
