@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
@@ -39,6 +40,7 @@ const mockResults = [
 const SearchPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const navigate = useNavigate();
   
   const { data: categories, isLoading: categoriesLoading } = useCategories();
   const { data: restaurants, isLoading: restaurantsLoading } = useRestaurants();
@@ -72,6 +74,10 @@ const SearchPage = () => {
   const handleCategorySelect = (categoryName: string) => {
     const newCategory = selectedCategory === categoryName ? null : categoryName;
     setSelectedCategory(newCategory);
+  };
+
+  const handleRestaurantClick = (restaurantId: string) => {
+    navigate(`/restaurant/${restaurantId}`);
   };
 
   return (
@@ -141,7 +147,11 @@ const SearchPage = () => {
             </h3>
             <div className="grid gap-4">
               {filteredResults.map((item) => (
-                <Card key={item.id} className="overflow-hidden hover:shadow-md transition-shadow">
+                <Card 
+                  key={item.id} 
+                  className="overflow-hidden hover:shadow-md transition-shadow cursor-pointer"
+                  onClick={() => handleRestaurantClick(item.id)}
+                >
                   <CardContent className="p-0">
                     <div className="flex">
                       {/* Imagem */}
