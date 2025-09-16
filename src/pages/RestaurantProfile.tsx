@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { AppHeader } from "@/components/AppHeader";
 import { BottomNavigation } from "@/components/BottomNavigation";
-import { ArrowLeft, User, MapPin, Phone, Clock, Edit, Save, X } from "lucide-react";
+import { ArrowLeft, User, MapPin, Phone, Clock, Edit, Save, X, Camera, Upload } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -15,6 +15,8 @@ const RestaurantProfile = () => {
   const { toast } = useToast();
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
 
   // Editable form data
   const [formData, setFormData] = useState({
@@ -38,6 +40,101 @@ const RestaurantProfile = () => {
   });
 
   const [originalData, setOriginalData] = useState(formData);
+
+  // Load avatar on component mount
+  useEffect(() => {
+    loadAvatar();
+  }, []);
+
+  const loadAvatar = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data } = supabase.storage
+          .from('avatars')
+          .getPublicUrl(`${user.id}/avatar.jpg`);
+        
+        // Check if the image actually exists
+        const response = await fetch(data.publicUrl);
+        if (response.ok) {
+          setAvatarUrl(data.publicUrl);
+        }
+      }
+    } catch (error) {
+      console.error('Error loading avatar:', error);
+    }
+  };
+
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast({
+        title: "Erro no upload",
+        description: "Por favor, selecione um arquivo de imagem válido.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast({
+        title: "Arquivo muito grande",
+        description: "Por favor, selecione uma imagem menor que 5MB.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setUploadingImage(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Usuário não autenticado');
+
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${user.id}/avatar.${fileExt}`;
+
+      // Delete existing avatar if it exists
+      await supabase.storage
+        .from('avatars')
+        .remove([`${user.id}/avatar.jpg`, `${user.id}/avatar.png`, `${user.id}/avatar.jpeg`]);
+
+      // Upload new avatar
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(fileName, file, {
+          cacheControl: '3600',
+          upsert: true
+        });
+
+      if (uploadError) throw uploadError;
+
+      // Get the public URL
+      const { data } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(fileName);
+
+      setAvatarUrl(data.publicUrl + '?t=' + new Date().getTime()); // Add timestamp to force refresh
+
+      toast({
+        title: "Foto atualizada",
+        description: "Sua foto de perfil foi atualizada com sucesso.",
+      });
+
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      toast({
+        title: "Erro no upload",
+        description: "Não foi possível fazer upload da imagem. Tente novamente.",
+        variant: "destructive",
+      });
+    } finally {
+      setUploadingImage(false);
+    }
+  };
 
   const dayNames = {
     monday: "Segunda-feira",
@@ -156,8 +253,36 @@ const RestaurantProfile = () => {
         <Card>
           <CardContent className="p-6">
             <div className="text-center mb-6">
-              <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                <User className="w-10 h-10 text-primary" />
+              <div className="relative w-20 h-20 mx-auto mb-4">
+                {avatarUrl ? (
+                  <img 
+                    src={avatarUrl} 
+                    alt="Avatar do restaurante" 
+                    className="w-20 h-20 rounded-full object-cover border-2 border-primary/20"
+                  />
+                ) : (
+                  <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center">
+                    <User className="w-10 h-10 text-primary" />
+                  </div>
+                )}
+                
+                {/* Upload button - always visible */}
+                <label htmlFor="avatar-upload" className="absolute -bottom-1 -right-1 bg-primary text-primary-foreground rounded-full p-2 cursor-pointer hover:bg-primary/90 transition-colors">
+                  {uploadingImage ? (
+                    <div className="w-4 h-4 animate-spin rounded-full border-2 border-current border-t-transparent"></div>
+                  ) : (
+                    <Camera className="w-4 h-4" />
+                  )}
+                </label>
+                
+                <input
+                  id="avatar-upload"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  className="hidden"
+                  disabled={uploadingImage}
+                />
               </div>
               {isEditing ? (
                 <div className="space-y-3">
