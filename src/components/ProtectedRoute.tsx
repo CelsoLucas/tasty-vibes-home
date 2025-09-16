@@ -93,9 +93,13 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   if (userProfile) {
     const currentPath = window.location.pathname;
     
-    // If customer tries to access restaurant routes, redirect to client home
-    if (userProfile.user_type === 'customer' && currentPath.startsWith('/restaurant/')) {
-      return <Navigate to="/client/home" replace />;
+    // If customer tries to access restaurant management routes, redirect to client home
+    if (userProfile.user_type === 'customer') {
+      const isRestaurantDetail = /^\/restaurant\/[^/]+$/.test(currentPath);
+      const isRestaurantAdminRoute = currentPath.startsWith('/restaurant/') && !isRestaurantDetail;
+      if (isRestaurantAdminRoute) {
+        return <Navigate to="/client/home" replace />;
+      }
     }
     
     // If restaurant tries to access client routes, redirect to restaurant home
