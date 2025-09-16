@@ -156,6 +156,7 @@ export type Database = {
           email: string | null
           id: string
           updated_at: string
+          user_type: string | null
         }
         Insert: {
           avatar_url?: string | null
@@ -165,6 +166,7 @@ export type Database = {
           email?: string | null
           id: string
           updated_at?: string
+          user_type?: string | null
         }
         Update: {
           avatar_url?: string | null
@@ -174,6 +176,7 @@ export type Database = {
           email?: string | null
           id?: string
           updated_at?: string
+          user_type?: string | null
         }
         Relationships: []
       }
@@ -201,6 +204,48 @@ export type Database = {
           id?: string
           name?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      restaurant_profiles: {
+        Row: {
+          address: string | null
+          business_name: string | null
+          cnpj: string | null
+          created_at: string | null
+          description: string | null
+          id: string
+          opening_hours: Json | null
+          phone: string | null
+          restaurant_name: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          address?: string | null
+          business_name?: string | null
+          cnpj?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          opening_hours?: Json | null
+          phone?: string | null
+          restaurant_name: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          address?: string | null
+          business_name?: string | null
+          cnpj?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          opening_hours?: Json | null
+          phone?: string | null
+          restaurant_name?: string
+          updated_at?: string | null
+          user_id?: string
         }
         Relationships: []
       }

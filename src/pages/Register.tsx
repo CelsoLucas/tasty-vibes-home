@@ -3,17 +3,25 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Mail, Lock, User, Eye, EyeOff } from "lucide-react";
+import { Mail, Lock, User, Eye, EyeOff, Store, MapPin, Phone, FileText } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
 const Register = () => {
+  const [userType, setUserType] = useState<'customer' | 'restaurant'>('customer');
   const [formData, setFormData] = useState({
+    // Customer fields
     fullName: "",
     email: "",
     password: "",
-    confirmPassword: ""
+    confirmPassword: "",
+    // Restaurant fields
+    restaurantName: "",
+    responsibleName: "",
+    cnpj: "",
+    phone: "",
+    address: ""
   });
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -111,16 +119,26 @@ const Register = () => {
     setLoading(true);
 
     try {
-      const { data, error } = await supabase.auth.signUp({
+      const signUpData = {
         email: formData.email,
         password: formData.password,
         options: {
           emailRedirectTo: `${window.location.origin}/`,
           data: {
-            display_name: formData.fullName,
+            user_type: userType,
+            display_name: userType === 'customer' ? formData.fullName : formData.responsibleName,
+            ...(userType === 'restaurant' && {
+              restaurant_name: formData.restaurantName,
+              business_name: formData.restaurantName,
+              cnpj: formData.cnpj,
+              phone: formData.phone,
+              address: formData.address
+            })
           }
         }
-      });
+      };
+
+      const { data, error } = await supabase.auth.signUp(signUpData);
 
       if (error) {
         toast({
@@ -194,25 +212,152 @@ const Register = () => {
             <h2 className="text-xl font-semibold text-center text-card-foreground">Criar conta</h2>
           </CardHeader>
           <CardContent className="space-y-4">
+            {/* User Type Toggle */}
+            <div className="flex items-center justify-center space-x-1 bg-muted/50 rounded-lg p-1">
+              <button
+                type="button"
+                onClick={() => setUserType('customer')}
+                className={`flex items-center space-x-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${
+                  userType === 'customer'
+                    ? 'bg-primary text-primary-foreground shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                <User className="h-4 w-4" />
+                <span>Sou Cliente</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setUserType('restaurant')}
+                className={`flex items-center space-x-2 px-4 py-2 rounded-md text-sm font-medium transition-all ${
+                  userType === 'restaurant'
+                    ? 'bg-primary text-primary-foreground shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                <Store className="h-4 w-4" />
+                <span>Sou Restaurante</span>
+              </button>
+            </div>
+
             <form onSubmit={handleRegister} className="space-y-4">
-              {/* Full Name Field */}
-              <div className="space-y-2">
-                <Label htmlFor="fullName" className="text-sm font-medium text-card-foreground">
-                  Nome completo
-                </Label>
-                <div className="relative">
-                  <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    id="fullName"
-                    type="text"
-                    placeholder="Seu nome completo"
-                    value={formData.fullName}
-                    onChange={(e) => handleInputChange("fullName", e.target.value)}
-                    className="pl-10 transition-all duration-200 focus:ring-2 focus:ring-primary/20"
-                    required
-                  />
+              {/* Conditional Fields based on User Type */}
+              {userType === 'customer' ? (
+                <div className="space-y-2">
+                  <Label htmlFor="fullName" className="text-sm font-medium text-card-foreground">
+                    Nome completo
+                  </Label>
+                  <div className="relative">
+                    <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      id="fullName"
+                      type="text"
+                      placeholder="Seu nome completo"
+                      value={formData.fullName}
+                      onChange={(e) => handleInputChange("fullName", e.target.value)}
+                      className="pl-10 transition-all duration-200 focus:ring-2 focus:ring-primary/20"
+                      required
+                    />
+                  </div>
                 </div>
-              </div>
+              ) : (
+                <>
+                  {/* Restaurant Name */}
+                  <div className="space-y-2">
+                    <Label htmlFor="restaurantName" className="text-sm font-medium text-card-foreground">
+                      Nome do restaurante
+                    </Label>
+                    <div className="relative">
+                      <Store className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        id="restaurantName"
+                        type="text"
+                        placeholder="Nome do seu restaurante"
+                        value={formData.restaurantName}
+                        onChange={(e) => handleInputChange("restaurantName", e.target.value)}
+                        className="pl-10 transition-all duration-200 focus:ring-2 focus:ring-primary/20"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  {/* Responsible Name */}
+                  <div className="space-y-2">
+                    <Label htmlFor="responsibleName" className="text-sm font-medium text-card-foreground">
+                      Nome do responsável
+                    </Label>
+                    <div className="relative">
+                      <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        id="responsibleName"
+                        type="text"
+                        placeholder="Seu nome"
+                        value={formData.responsibleName}
+                        onChange={(e) => handleInputChange("responsibleName", e.target.value)}
+                        className="pl-10 transition-all duration-200 focus:ring-2 focus:ring-primary/20"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  {/* CNPJ */}
+                  <div className="space-y-2">
+                    <Label htmlFor="cnpj" className="text-sm font-medium text-card-foreground">
+                      CNPJ
+                    </Label>
+                    <div className="relative">
+                      <FileText className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        id="cnpj"
+                        type="text"
+                        placeholder="00.000.000/0000-00"
+                        value={formData.cnpj}
+                        onChange={(e) => handleInputChange("cnpj", e.target.value)}
+                        className="pl-10 transition-all duration-200 focus:ring-2 focus:ring-primary/20"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  {/* Phone */}
+                  <div className="space-y-2">
+                    <Label htmlFor="phone" className="text-sm font-medium text-card-foreground">
+                      Telefone
+                    </Label>
+                    <div className="relative">
+                      <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        id="phone"
+                        type="tel"
+                        placeholder="(11) 99999-9999"
+                        value={formData.phone}
+                        onChange={(e) => handleInputChange("phone", e.target.value)}
+                        className="pl-10 transition-all duration-200 focus:ring-2 focus:ring-primary/20"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  {/* Address */}
+                  <div className="space-y-2">
+                    <Label htmlFor="address" className="text-sm font-medium text-card-foreground">
+                      Endereço
+                    </Label>
+                    <div className="relative">
+                      <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        id="address"
+                        type="text"
+                        placeholder="Endereço completo"
+                        value={formData.address}
+                        onChange={(e) => handleInputChange("address", e.target.value)}
+                        className="pl-10 transition-all duration-200 focus:ring-2 focus:ring-primary/20"
+                        required
+                      />
+                    </div>
+                  </div>
+                </>
+              )}
 
               {/* Email Field */}
               <div className="space-y-2">
@@ -224,7 +369,7 @@ const Register = () => {
                   <Input
                     id="email"
                     type="email"
-                    placeholder="seu@email.com"
+                    placeholder={userType === 'customer' ? "seu@email.com" : "contato@restaurante.com"}
                     value={formData.email}
                     onChange={(e) => handleEmailChange(e.target.value)}
                     className={`pl-10 transition-all duration-200 focus:ring-2 focus:ring-primary/20 ${
@@ -301,7 +446,7 @@ const Register = () => {
                 className="w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-lg transition-all duration-200 hover:shadow-lg hover:shadow-primary/25"
                 disabled={loading}
               >
-                {loading ? 'Criando conta...' : 'Criar conta'}
+                {loading ? 'Criando conta...' : userType === 'customer' ? 'Criar conta' : 'Cadastrar restaurante'}
               </Button>
             </form>
 
