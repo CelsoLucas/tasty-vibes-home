@@ -5,41 +5,80 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { AppHeader } from "@/components/AppHeader";
 import { BottomNavigation } from "@/components/BottomNavigation";
+import { Skeleton } from "@/components/ui/skeleton";
 import { ArrowLeft, User, MapPin, Phone, Clock, Edit, Save, X, Camera, Upload } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { 
+  useRestaurantProfile, 
+  useRestaurantStats, 
+  useProfileCompletion,
+  useUpdateRestaurantProfile 
+} from "@/hooks/useRestaurants";
 
 const RestaurantProfile = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isEditing, setIsEditing] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
 
+  // Fetch real data from database
+  const { data: profile, isLoading: profileLoading } = useRestaurantProfile();
+  const { data: stats } = useRestaurantStats(profile?.id);
+  const { data: completion } = useProfileCompletion(profile);
+  const updateProfile = useUpdateRestaurantProfile();
+
   // Editable form data
   const [formData, setFormData] = useState({
-    name: "Bistro da Vila",
-    category: "Italiana", 
-    description: "Restaurante italiano autêntico com massas artesanais e ambiente aconchegante. Especialidades da casa incluem risotto de funghi porcini e lasanha da nonna.",
-    address: "Rua das Flores, 123 - Vila Madalena, São Paulo - SP",
-    phone: "(11) 3456-7890",
-    whatsapp: "(11) 99876-5432",
-    email: "contato@bistrodavila.com.br",
-    website: "www.bistrodavila.com.br",
-    openingHours: {
-      monday: "18:00 - 23:00",
-      tuesday: "18:00 - 23:00", 
-      wednesday: "18:00 - 23:00",
-      thursday: "18:00 - 23:00",
-      friday: "18:00 - 00:00",
-      saturday: "12:00 - 00:00",
-      sunday: "12:00 - 22:00"
+    restaurant_name: "",
+    category: "", 
+    description: "",
+    address: "",
+    phone: "",
+    whatsapp: "",
+    email: "",
+    website: "",
+    opening_hours: {
+      monday: "",
+      tuesday: "", 
+      wednesday: "",
+      thursday: "",
+      friday: "",
+      saturday: "",
+      sunday: ""
     }
   });
 
   const [originalData, setOriginalData] = useState(formData);
+
+  // Update form data when profile loads
+  useEffect(() => {
+    if (profile) {
+      const newFormData = {
+        restaurant_name: profile.restaurant_name || "",
+        category: profile.category || "",
+        description: profile.description || "",
+        address: profile.address || "",
+        phone: profile.phone || "",
+        whatsapp: profile.whatsapp || "",
+        email: profile.email || "",
+        website: profile.website || "",
+        opening_hours: profile.opening_hours || {
+          monday: "",
+          tuesday: "",
+          wednesday: "",
+          thursday: "",
+          friday: "",
+          saturday: "",
+          sunday: ""
+        }
+      };
+      setFormData(newFormData);
+      setOriginalData(newFormData);
+    }
+  }, [profile]);
 
   // Load avatar on component mount
   useEffect(() => {
@@ -157,16 +196,8 @@ const RestaurantProfile = () => {
   };
 
   const handleSave = async () => {
-    setLoading(true);
     try {
-      // Here you would normally save to Supabase
-      // const { error } = await supabase
-      //   .from('restaurant_profiles')
-      //   .update(formData)
-      //   .eq('user_id', user.id);
-
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await updateProfile.mutateAsync(formData);
       
       toast({
         title: "Perfil atualizado",
@@ -175,13 +206,12 @@ const RestaurantProfile = () => {
       
       setIsEditing(false);
     } catch (error) {
+      console.error('Error saving profile:', error);
       toast({
         title: "Erro ao salvar",
         description: "Não foi possível salvar as alterações. Tente novamente.",
         variant: "destructive",
       });
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -195,12 +225,40 @@ const RestaurantProfile = () => {
   const handleHoursChange = (day: string, value: string) => {
     setFormData(prev => ({
       ...prev,
-      openingHours: {
-        ...prev.openingHours,
+      opening_hours: {
+        ...prev.opening_hours,
         [day]: value
       }
     }));
   };
+
+  if (profileLoading) {
+    return (
+      <div className="min-h-screen bg-background pb-20">
+        <AppHeader />
+        <div className="bg-card border-b p-4">
+          <div className="flex items-center justify-between">
+            <Skeleton className="h-10 w-20" />
+            <Skeleton className="h-6 w-32" />
+            <Skeleton className="h-10 w-16" />
+          </div>
+        </div>
+        <main className="p-4 space-y-6">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <Card key={i}>
+              <CardHeader>
+                <Skeleton className="h-6 w-32" />
+              </CardHeader>
+              <CardContent>
+                <Skeleton className="h-24 w-full" />
+              </CardContent>
+            </Card>
+          ))}
+        </main>
+        <BottomNavigation />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background pb-20">
@@ -225,7 +283,7 @@ const RestaurantProfile = () => {
                 size="sm" 
                 variant="outline" 
                 onClick={handleCancel}
-                disabled={loading}
+                disabled={updateProfile.isPending}
               >
                 <X className="w-4 h-4 mr-2" />
                 Cancelar
@@ -233,10 +291,10 @@ const RestaurantProfile = () => {
               <Button 
                 size="sm" 
                 onClick={handleSave}
-                disabled={loading}
+                disabled={updateProfile.isPending}
               >
                 <Save className="w-4 h-4 mr-2" />
-                {loading ? "Salvando..." : "Salvar"}
+                {updateProfile.isPending ? "Salvando..." : "Salvar"}
               </Button>
             </div>
           ) : (
@@ -287,8 +345,8 @@ const RestaurantProfile = () => {
               {isEditing ? (
                 <div className="space-y-3">
                   <Input
-                    value={formData.name}
-                    onChange={(e) => handleInputChange('name', e.target.value)}
+                    value={formData.restaurant_name}
+                    onChange={(e) => handleInputChange('restaurant_name', e.target.value)}
                     className="text-center text-2xl font-bold"
                     placeholder="Nome do restaurante"
                   />
@@ -301,13 +359,21 @@ const RestaurantProfile = () => {
                 </div>
               ) : (
                 <>
-                  <h2 className="text-2xl font-bold">{formData.name}</h2>
-                  <p className="text-muted-foreground">{formData.category}</p>
+                  <h2 className="text-2xl font-bold">
+                    {formData.restaurant_name || 'Nome do Restaurante'}
+                  </h2>
+                  <p className="text-muted-foreground">
+                    {formData.category || 'Categoria não informada'}
+                  </p>
                 </>
               )}
               <div className="flex items-center justify-center gap-2 mt-2">
-                <span className="text-yellow-500">★ 4.6</span>
-                <span className="text-muted-foreground">(89 avaliações)</span>
+                <span className="text-yellow-500">
+                  ★ {stats?.averageRating || '0'}
+                </span>
+                <span className="text-muted-foreground">
+                  ({stats?.totalReviews || 0} avaliações)
+                </span>
               </div>
             </div>
             
@@ -322,7 +388,9 @@ const RestaurantProfile = () => {
                     rows={4}
                   />
                 ) : (
-                  <p className="text-muted-foreground">{formData.description}</p>
+                  <p className="text-muted-foreground">
+                    {formData.description || 'Descrição não informada'}
+                  </p>
                 )}
               </div>
             </div>
@@ -348,7 +416,7 @@ const RestaurantProfile = () => {
                   className="flex-1"
                 />
               ) : (
-                <span className="text-sm">{formData.address}</span>
+                <span className="text-sm">{formData.address || 'Não informado'}</span>
               )}
             </div>
             
@@ -362,7 +430,7 @@ const RestaurantProfile = () => {
                   className="flex-1"
                 />
               ) : (
-                <span className="text-sm">{formData.phone}</span>
+                <span className="text-sm">{formData.phone || 'Não informado'}</span>
               )}
             </div>
             
@@ -376,7 +444,7 @@ const RestaurantProfile = () => {
                   className="flex-1"
                 />
               ) : (
-                <span className="text-sm">{formData.whatsapp}</span>
+                <span className="text-sm">{formData.whatsapp || 'Não informado'}</span>
               )}
             </div>
             
@@ -390,7 +458,7 @@ const RestaurantProfile = () => {
                   className="flex-1"
                 />
               ) : (
-                <span className="text-sm">{formData.email}</span>
+                <span className="text-sm">{formData.email || 'Não informado'}</span>
               )}
             </div>
             
@@ -404,7 +472,7 @@ const RestaurantProfile = () => {
                   className="flex-1"
                 />
               ) : (
-                <span className="text-sm">{formData.website}</span>
+                <span className="text-sm">{formData.website || 'Não informado'}</span>
               )}
             </div>
           </CardContent>
@@ -420,7 +488,7 @@ const RestaurantProfile = () => {
           </CardHeader>
           <CardContent>
             <div className="space-y-2">
-              {Object.entries(formData.openingHours).map(([day, hours]) => (
+              {Object.entries(formData.opening_hours).map(([day, hours]) => (
                 <div key={day} className="flex justify-between py-2 border-b border-border/50 last:border-0">
                   <span className="text-sm font-medium">{dayNames[day as keyof typeof dayNames]}</span>
                   {isEditing ? (
@@ -431,7 +499,9 @@ const RestaurantProfile = () => {
                       className="w-32 h-8 text-sm"
                     />
                   ) : (
-                    <span className="text-sm text-muted-foreground">{hours}</span>
+                    <span className="text-sm text-muted-foreground">
+                      {hours || 'Não informado'}
+                    </span>
                   )}
                 </div>
               ))}
@@ -448,14 +518,34 @@ const RestaurantProfile = () => {
             <div className="space-y-3">
               <div className="flex justify-between items-center">
                 <span className="text-sm">Completude do perfil</span>
-                <span className="text-sm font-semibold">85%</span>
+                <span className="text-sm font-semibold">{completion?.percentage || 0}%</span>
               </div>
               <div className="w-full bg-secondary rounded-full h-2">
-                <div className="bg-primary h-2 rounded-full" style={{ width: '85%' }}></div>
+                <div 
+                  className="bg-primary h-2 rounded-full transition-all duration-300" 
+                  style={{ width: `${completion?.percentage || 0}%` }}
+                />
               </div>
-              <p className="text-xs text-muted-foreground">
-                Adicione fotos do cardápio para completar seu perfil
-              </p>
+              {completion?.missingFields && completion.missingFields.length > 0 ? (
+                <p className="text-xs text-muted-foreground">
+                  Campos faltantes: {completion.missingFields.map(field => {
+                    const fieldNames: Record<string, string> = {
+                      restaurant_name: 'Nome',
+                      description: 'Descrição',
+                      phone: 'Telefone',
+                      address: 'Endereço',
+                      category: 'Categoria',
+                      email: 'Email',
+                      opening_hours: 'Horários'
+                    };
+                    return fieldNames[field] || field;
+                  }).join(', ')}
+                </p>
+              ) : (
+                <p className="text-xs text-green-600">
+                  ✓ Perfil completo!
+                </p>
+              )}
             </div>
           </CardContent>
         </Card>

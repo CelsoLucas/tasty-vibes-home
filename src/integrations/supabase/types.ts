@@ -166,43 +166,87 @@ export type Database = {
         Row: {
           address: string | null
           business_name: string | null
+          category: string | null
           cnpj: string | null
           created_at: string | null
           description: string | null
+          email: string | null
           id: string
           opening_hours: Json | null
           phone: string | null
           restaurant_name: string
           updated_at: string | null
           user_id: string
+          website: string | null
+          whatsapp: string | null
         }
         Insert: {
           address?: string | null
           business_name?: string | null
+          category?: string | null
           cnpj?: string | null
           created_at?: string | null
           description?: string | null
+          email?: string | null
           id?: string
           opening_hours?: Json | null
           phone?: string | null
           restaurant_name: string
           updated_at?: string | null
           user_id: string
+          website?: string | null
+          whatsapp?: string | null
         }
         Update: {
           address?: string | null
           business_name?: string | null
+          category?: string | null
           cnpj?: string | null
           created_at?: string | null
           description?: string | null
+          email?: string | null
           id?: string
           opening_hours?: Json | null
           phone?: string | null
           restaurant_name?: string
           updated_at?: string | null
           user_id?: string
+          website?: string | null
+          whatsapp?: string | null
         }
         Relationships: []
+      }
+      restaurant_views: {
+        Row: {
+          created_at: string
+          id: string
+          ip_address: string | null
+          restaurant_id: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          ip_address?: string | null
+          restaurant_id: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          ip_address?: string | null
+          restaurant_id?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "restaurant_views_restaurant_id_fkey"
+            columns: ["restaurant_id"]
+            isOneToOne: false
+            referencedRelation: "restaurant_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       restaurants: {
         Row: {

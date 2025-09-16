@@ -314,10 +314,137 @@ export const useRestaurantProfile = () => {
         .from('restaurant_profiles')
         .select('*')
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
       return data;
+    }
+  });
+};
+
+// Hook para buscar visualizações do restaurante
+export const useRestaurantViews = (restaurantId: string) => {
+  return useQuery({
+    queryKey: ['restaurant-views', restaurantId],
+    queryFn: async () => {
+      try {
+        const { data, error } = await (supabase as any)
+          .from('restaurant_views')
+          .select('id')
+          .eq('restaurant_id', restaurantId);
+
+        if (error) throw error;
+        return { totalViews: data?.length || 0 };
+      } catch (error) {
+        console.error('Error fetching restaurant views:', error);
+        return { totalViews: 0 };
+      }
+    },
+    enabled: !!restaurantId,
+  });
+};
+
+// Hook para calcular completude do perfil
+export const useProfileCompletion = (profileData: any) => {
+  return useQuery({
+    queryKey: ['profile-completion', profileData?.id],
+    queryFn: async () => {
+      if (!profileData) return { percentage: 0, missingFields: [] };
+
+      const requiredFields = [
+        'restaurant_name',
+        'description', 
+        'phone',
+        'address',
+        'category',
+        'email',
+        'opening_hours'
+      ];
+
+      const filledFields = requiredFields.filter(field => {
+        const value = profileData[field];
+        return value && value !== '' && value !== null;
+      });
+
+      const percentage = Math.round((filledFields.length / requiredFields.length) * 100);
+      const missingFields = requiredFields.filter(field => {
+        const value = profileData[field];
+        return !value || value === '' || value === null;
+      });
+
+      return { percentage, missingFields };
+    },
+    enabled: !!profileData,
+  });
+};
+
+// Hook para distribuição de ratings
+export const useReviewsDistribution = (restaurantId: string) => {
+  return useQuery({
+    queryKey: ['reviews-distribution', restaurantId],
+    queryFn: async () => {
+      try {
+        const { data, error } = await (supabase as any)
+          .from('reviews')
+          .select('rating')
+          .eq('restaurant_id', restaurantId);
+
+        if (error) throw error;
+
+        if (!data || data.length === 0) {
+          return {
+            distribution: { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 },
+            totalReviews: 0
+          };
+        }
+
+        const distribution = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
+        data.forEach((review: any) => {
+          if (review.rating >= 1 && review.rating <= 5) {
+            distribution[review.rating as keyof typeof distribution]++;
+          }
+        });
+
+        return {
+          distribution,
+          totalReviews: data.length
+        };
+      } catch (error) {
+        console.error('Error fetching reviews distribution:', error);
+        return {
+          distribution: { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 },
+          totalReviews: 0
+        };
+      }
+    },
+    enabled: !!restaurantId,
+  });
+};
+
+// Mutation para atualizar perfil do restaurante
+export const useUpdateRestaurantProfile = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async (profileData: any) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated');
+
+      const { data, error } = await (supabase as any)
+        .from('restaurant_profiles')
+        .upsert({
+          user_id: user.id,
+          ...profileData,
+          updated_at: new Date().toISOString()
+        })
+        .select()
+        .single();
+      
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['restaurant-profile'] });
     }
   });
 };
