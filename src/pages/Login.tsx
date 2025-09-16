@@ -18,6 +18,26 @@ const Login = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  // Função para verificar se o email existe na tabela profiles
+  const checkEmailExistsInProfiles = async (email: string): Promise<{ email: string | null; user_type: string | null } | null> => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('email, user_type')
+        .eq('email', email)
+        .maybeSingle();
+      
+      if (error) {
+        console.error('Error checking email in profiles:', error);
+        return null;
+      }
+      
+      return data; // Retorna os dados do perfil se encontrado, null se não encontrado
+    } catch (error) {
+      console.error('Error checking email:', error);
+      return null;
+    }
+  };
 
   // Validação do email sem verificação em tempo real
   const handleEmailChange = (value: string) => {
@@ -38,31 +58,23 @@ const Login = () => {
     setPasswordError("");
 
     try {
+      // Primeiro: verificar se o email existe na tabela profiles
+      const profileData = await checkEmailExistsInProfiles(email);
+      
+      if (!profileData) {
+        setEmailError("Este email não está cadastrado");
+        return;
+      }
+
+      // Segundo: tentar fazer login
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
       if (error) {
-        // Para credenciais inválidas, primeiro verificamos se o email existe
         if (error.message.includes('Invalid login credentials')) {
-          try {
-            // Tentativa de verificar se o email existe com uma senha obviamente errada
-            const { error: checkError } = await supabase.auth.signInWithPassword({
-              email,
-              password: '__invalid_password_check__'
-            });
-            
-            // Se ainda der "Invalid login credentials", o email existe (mas senha errada)
-            if (checkError?.message.includes('Invalid login credentials')) {
-              setPasswordError("Senha incorreta");
-            } else {
-              // Se der erro diferente, provavelmente email não existe
-              setEmailError("Este email não está cadastrado");
-            }
-          } catch {
-            setPasswordError("Senha incorreta");
-          }
+          setPasswordError("Senha incorreta");
         } else if (error.message.includes('Email not confirmed')) {
           setEmailError("Por favor, confirme seu email antes de fazer login");
         } else {
@@ -80,7 +92,16 @@ const Login = () => {
           title: "Login realizado com sucesso!",
           description: "Bem-vindo de volta!",
         });
-        navigate('/');
+        
+        // Redirecionar baseado no tipo de usuário
+        if (profileData.user_type === 'restaurant') {
+          navigate('/restaurant/home');
+        } else if (profileData.user_type === 'customer') {
+          navigate('/client/home');
+        } else {
+          // Fallback para usuários sem tipo definido
+          navigate('/');
+        }
       }
     } catch (error) {
       toast({
