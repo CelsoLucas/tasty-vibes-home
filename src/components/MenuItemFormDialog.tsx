@@ -2,7 +2,7 @@ import { useState, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -165,9 +165,10 @@ export const MenuItemFormDialog = ({
       setImagePreview(null);
       onSuccess?.();
     } catch (error) {
+      console.error('Error creating/updating menu item:', error);
       toast({
         title: "Erro",
-        description: "Ocorreu um erro. Tente novamente.",
+        description: error instanceof Error ? error.message : "Ocorreu um erro. Tente novamente.",
         variant: "destructive"
       });
     }
@@ -191,6 +192,9 @@ export const MenuItemFormDialog = ({
           <DialogTitle>
             {isEditing ? "Editar Item" : "Novo Item do Cardápio"}
           </DialogTitle>
+          <DialogDescription>
+            {isEditing ? "Edite as informações do item do seu cardápio" : "Adicione um novo item ao seu cardápio"}
+          </DialogDescription>
         </DialogHeader>
         
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">

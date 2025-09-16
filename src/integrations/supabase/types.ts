@@ -97,7 +97,7 @@ export type Database = {
             foreignKeyName: "menu_items_restaurant_id_fkey"
             columns: ["restaurant_id"]
             isOneToOne: false
-            referencedRelation: "restaurants"
+            referencedRelation: "restaurant_profiles"
             referencedColumns: ["id"]
           },
         ]
