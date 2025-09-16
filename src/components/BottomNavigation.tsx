@@ -1,18 +1,34 @@
-import { Home, Search, Plus, User, Heart } from "lucide-react";
+import { Home, Search, Heart, MessageSquare, User, BarChart3, Menu, Settings, Plus } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 
-const tabs = [
-  { id: 'home', icon: Home, label: 'Início', path: '/' },
-  { id: 'search', icon: Search, label: 'Buscar', path: '/search' },
-  { id: 'matching', icon: Heart, label: 'Matching', path: '/matching' },
-  { id: 'add', icon: Plus, label: 'Adicionar', path: '/add-review' },
-  { id: 'profile', icon: User, label: 'Perfil', path: '/profile' }
-];
+// Determine user type from URL to show appropriate navigation
+const getTabsForUserType = () => {
+  const currentPath = window.location.pathname;
+  
+  if (currentPath.startsWith('/restaurant/')) {
+    return [
+      { id: 'home', icon: BarChart3, label: 'Dashboard', path: '/restaurant/home' },
+      { id: 'profile', icon: User, label: 'Perfil', path: '/restaurant/profile' },
+      { id: 'menu', icon: Menu, label: 'Cardápio', path: '/restaurant/menu' },
+      { id: 'reviews', icon: MessageSquare, label: 'Avaliações', path: '/restaurant/reviews' },
+      { id: 'settings', icon: Settings, label: 'Config', path: '/restaurant/settings' },
+    ];
+  }
+  
+  return [
+    { id: 'home', icon: Home, label: 'Início', path: '/client/home' },
+    { id: 'search', icon: Search, label: 'Buscar', path: '/client/search' },
+    { id: 'matching', icon: Heart, label: 'Matching', path: '/client/matching' },
+    { id: 'add', icon: Plus, label: 'Adicionar', path: '/client/add-review' },
+    { id: 'profile', icon: User, label: 'Perfil', path: '/client/profile' }
+  ];
+};
 
 export const BottomNavigation = () => {
   const location = useLocation();
   const [activeTab, setActiveTab] = useState('home');
+  const tabs = getTabsForUserType();
 
   // Update active tab based on current route
   useEffect(() => {
@@ -20,7 +36,7 @@ export const BottomNavigation = () => {
     if (currentTab) {
       setActiveTab(currentTab.id);
     }
-  }, [location.pathname]);
+  }, [location.pathname, tabs]);
 
   const getTabIndex = (tabId: string) => tabs.findIndex(tab => tab.id === tabId);
   const activeIndex = getTabIndex(activeTab);

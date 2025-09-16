@@ -5,16 +5,27 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AuthRoute } from "@/components/AuthRoute";
-import Index from "./pages/Index";
+
+// Client Pages
+import ClientHome from "./pages/ClientHome";
+import ClientSearch from "./pages/ClientSearch";
+import ClientMatching from "./pages/ClientMatching";
+import ClientMatches from "./pages/ClientMatches";
+import ClientAddReview from "./pages/ClientAddReview";
+import ClientProfile from "./pages/ClientProfile";
+
+// Restaurant Pages
+import RestaurantHome from "./pages/RestaurantHome";
+import RestaurantProfile from "./pages/RestaurantProfile";
+import RestaurantMenu from "./pages/RestaurantMenu";
+import RestaurantReviews from "./pages/RestaurantReviews";
+import RestaurantSettings from "./pages/RestaurantSettings";
+
+// Shared Pages
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import ForgotPassword from "./pages/ForgotPassword";
-import SearchPage from "./pages/SearchPage";
-import MatchingPage from "./pages/MatchingPage";
-import MyMatchesPage from "./pages/MyMatchesPage";
-import AddReviewPage from "./pages/AddReviewPage";
-import ProfilePage from "./pages/ProfilePage";
-import RestaurantProfile from "./pages/RestaurantProfile";
+import RestaurantDetails from "./pages/RestaurantDetails";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -31,16 +42,35 @@ const App = () => (
           <Route path="/register" element={<AuthRoute><Register /></AuthRoute>} />
           <Route path="/forgot-password" element={<AuthRoute><ForgotPassword /></AuthRoute>} />
           
-          {/* Protected Routes */}
-          <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
-          <Route path="/search" element={<ProtectedRoute><SearchPage /></ProtectedRoute>} />
-          <Route path="/matching" element={<ProtectedRoute><MatchingPage /></ProtectedRoute>} />
-          <Route path="/my-matches" element={<ProtectedRoute><MyMatchesPage /></ProtectedRoute>} />
-          <Route path="/add-review" element={<ProtectedRoute><AddReviewPage /></ProtectedRoute>} />
-          <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
-          <Route path="/restaurant/:id" element={<ProtectedRoute><RestaurantProfile /></ProtectedRoute>} />
+          {/* Root Route - Handled by ProtectedRoute for smart redirection */}
+          <Route path="/" element={<ProtectedRoute><ClientHome /></ProtectedRoute>} />
           
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+          {/* Client Routes */}
+          <Route path="/client/home" element={<ProtectedRoute><ClientHome /></ProtectedRoute>} />
+          <Route path="/client/search" element={<ProtectedRoute><ClientSearch /></ProtectedRoute>} />
+          <Route path="/client/matching" element={<ProtectedRoute><ClientMatching /></ProtectedRoute>} />
+          <Route path="/client/matches" element={<ProtectedRoute><ClientMatches /></ProtectedRoute>} />
+          <Route path="/client/add-review" element={<ProtectedRoute><ClientAddReview /></ProtectedRoute>} />
+          <Route path="/client/profile" element={<ProtectedRoute><ClientProfile /></ProtectedRoute>} />
+          
+          {/* Restaurant Routes */}
+          <Route path="/restaurant/home" element={<ProtectedRoute><RestaurantHome /></ProtectedRoute>} />
+          <Route path="/restaurant/profile" element={<ProtectedRoute><RestaurantProfile /></ProtectedRoute>} />
+          <Route path="/restaurant/menu" element={<ProtectedRoute><RestaurantMenu /></ProtectedRoute>} />
+          <Route path="/restaurant/reviews" element={<ProtectedRoute><RestaurantReviews /></ProtectedRoute>} />
+          <Route path="/restaurant/settings" element={<ProtectedRoute><RestaurantSettings /></ProtectedRoute>} />
+          
+          {/* Legacy/Backward Compatibility Routes */}
+          <Route path="/search" element={<ProtectedRoute><ClientSearch /></ProtectedRoute>} />
+          <Route path="/matching" element={<ProtectedRoute><ClientMatching /></ProtectedRoute>} />
+          <Route path="/my-matches" element={<ProtectedRoute><ClientMatches /></ProtectedRoute>} />
+          <Route path="/add-review" element={<ProtectedRoute><ClientAddReview /></ProtectedRoute>} />
+          <Route path="/profile" element={<ProtectedRoute><ClientProfile /></ProtectedRoute>} />
+          
+          {/* Shared Routes */}
+          <Route path="/restaurant/:id" element={<ProtectedRoute><RestaurantDetails /></ProtectedRoute>} />
+          
+          {/* Catch-all Route */}
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

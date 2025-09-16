@@ -1,453 +1,176 @@
-import { useState } from "react";
-import { ArrowLeft, Heart, Star, MapPin, Phone, Share, MessageCircle, DollarSign } from "lucide-react";
-import { useNavigate, useParams } from "react-router-dom";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { AppHeader } from "@/components/AppHeader";
 import { BottomNavigation } from "@/components/BottomNavigation";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Separator } from "@/components/ui/separator";
-import { useRestaurant, useRestaurantReviews, useRestaurantMenu, useRestaurantStats } from "@/hooks/useRestaurants";
+import { ArrowLeft, User, MapPin, Phone, Clock, Edit } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
-// Import restaurant images
-import restaurant1 from "@/assets/restaurant-1.jpg";
-import restaurant2 from "@/assets/restaurant-2.jpg";
-import restaurant3 from "@/assets/restaurant-3.jpg";
-import restaurant4 from "@/assets/restaurant-4.jpg";
-import restaurant5 from "@/assets/restaurant-5.jpg";
-
-// Mock data for demonstration
-const mockRestaurant = {
-  id: "1",
-  name: "Restaurante Bella Vista",
-  category: "Italiana",
-  rating: 4.5,
-  reviewCount: 128,
-  priceRange: "$$",
-  location: "Centro, São Paulo",
-  description: "Autêntica culinária italiana com pratos tradicionais preparados com ingredientes frescos e importados. Ambiente aconchegante perfeito para jantares românticos.",
-  images: [
-    "/src/assets/restaurant-1.jpg",
-    "/src/assets/restaurant-2.jpg",
-    "/src/assets/restaurant-3.jpg",
-    "/src/assets/restaurant-4.jpg"
-  ],
-  logo: "/src/assets/logo.png",
-  phone: "+55 11 99999-9999"
-};
-
-const mockMenuItems = [
-  {
-    category: "Entradas",
-    items: [
-      { id: "1", name: "Bruschetta Italiana", price: "R$ 18,90", image: "/src/assets/restaurant-1.jpg" },
-      { id: "2", name: "Antipasto Misto", price: "R$ 32,90", image: "/src/assets/restaurant-2.jpg" }
-    ]
-  },
-  {
-    category: "Pratos Principais",
-    items: [
-      { id: "3", name: "Lasanha Bolonhesa", price: "R$ 45,90", image: "/src/assets/restaurant-3.jpg" },
-      { id: "4", name: "Spaghetti Carbonara", price: "R$ 38,90", image: "/src/assets/restaurant-4.jpg" }
-    ]
-  }
-];
-
-const mockReviews = [
-  {
-    id: "1",
-    user: { name: "Maria Silva", avatar: "/src/assets/logo.png" },
-    rating: 5,
-    comment: "Experiência incrível! A comida estava deliciosa e o atendimento impecável.",
-    date: "2024-01-20",
-    images: ["/src/assets/restaurant-1.jpg"]
-  },
-  {
-    id: "2",
-    user: { name: "João Santos", avatar: "/src/assets/logo.png" },
-    rating: 4,
-    comment: "Ambiente muito agradável, preços justos. Recomendo!",
-    date: "2024-01-18",
-    images: []
-  }
-];
-
-export default function RestaurantProfile() {
-  const { id } = useParams<{ id: string }>();
+const RestaurantProfile = () => {
   const navigate = useNavigate();
-  const [isFavorite, setIsFavorite] = useState(false);
-  const { data: restaurant, isLoading, error } = useRestaurant(id || "");
-  const { data: reviews } = useRestaurantReviews(id || "");
-  const { data: menu } = useRestaurantMenu(id || "");
-  const { data: stats } = useRestaurantStats(id || "");
 
-  // Map das imagens locais
-  const imageMap = {
-    '/src/assets/restaurant-1.jpg': restaurant1,
-    '/src/assets/restaurant-2.jpg': restaurant2,
-    '/src/assets/restaurant-3.jpg': restaurant3,
-    '/src/assets/restaurant-4.jpg': restaurant4,
-    '/src/assets/restaurant-5.jpg': restaurant5,
+  // Mock restaurant data
+  const restaurant = {
+    name: "Bistro da Vila",
+    category: "Italiana",
+    description: "Restaurante italiano autêntico com massas artesanais e ambiente aconchegante. Especialidades da casa incluem risotto de funghi porcini e lasanha da nonna.",
+    address: "Rua das Flores, 123 - Vila Madalena, São Paulo - SP",
+    phone: "(11) 3456-7890",
+    whatsapp: "(11) 99876-5432",
+    email: "contato@bistrodavila.com.br",
+    website: "www.bistrodavila.com.br",
+    openingHours: {
+      monday: "18:00 - 23:00",
+      tuesday: "18:00 - 23:00", 
+      wednesday: "18:00 - 23:00",
+      thursday: "18:00 - 23:00",
+      friday: "18:00 - 00:00",
+      saturday: "12:00 - 00:00",
+      sunday: "12:00 - 22:00"
+    },
+    rating: 4.6,
+    totalReviews: 89
   };
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-background pb-20">
-        <AppHeader />
-        <div className="flex items-center justify-center h-64">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-            <p className="text-muted-foreground">Carregando restaurante...</p>
-          </div>
-        </div>
-        <BottomNavigation />
-      </div>
-    );
-  }
-
-  if (error || !restaurant) {
-    return (
-      <div className="min-h-screen bg-background pb-20">
-        <AppHeader />
-        <div className="flex items-center justify-center h-64">
-          <div className="text-center">
-            <p className="text-destructive mb-2">Restaurante não encontrado</p>
-            <Button onClick={() => navigate('/')} variant="outline">
-              Voltar para Home
-            </Button>
-          </div>
-        </div>
-        <BottomNavigation />
-      </div>
-    );
-  }
-
-  const restaurantImage = imageMap[restaurant.image_url as keyof typeof imageMap] || restaurant1;
-
-  const handleBack = () => {
-    navigate(-1);
-  };
-
-  const toggleFavorite = () => {
-    setIsFavorite(!isFavorite);
-  };
-
-  const handleViewMap = () => {
-    // TODO: Implementar visualização no mapa
-    console.log("Ver no mapa");
-  };
-
-  const handleShare = () => {
-    // TODO: Implementar compartilhamento
-    console.log("Compartilhar");
-  };
-
-  const handleWhatsApp = () => {
-    const phone = restaurant.whatsapp || restaurant.phone || "5511999999999";
-    window.open(`https://wa.me/${phone.replace(/\D/g, '')}`);
-  };
-
-  const handleAddReview = () => {
-    navigate("/add-review");
-  };
-
-  const handleViewAllReviews = () => {
-    // TODO: Implementar página de todas as avaliações
-    console.log("Ver todas as avaliações");
+  const dayNames = {
+    monday: "Segunda-feira",
+    tuesday: "Terça-feira",
+    wednesday: "Quarta-feira", 
+    thursday: "Quinta-feira",
+    friday: "Sexta-feira",
+    saturday: "Sábado",
+    sunday: "Domingo"
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pb-20">
       <AppHeader />
       
-      {/* Cabeçalho Secundário */}
-      <header className="flex items-center justify-between p-4 bg-card border-b border-border">
-        <Button variant="ghost" size="icon" onClick={handleBack}>
-          <ArrowLeft className="w-5 h-5 text-foreground" />
-        </Button>
-        
-        <h1 className="text-lg font-semibold text-foreground flex-1 text-center px-4">
-          {restaurant.name}
-        </h1>
-        
-        <Button 
-          variant="ghost" 
-          size="icon" 
-          onClick={toggleFavorite}
-          className={isFavorite ? "text-destructive" : "text-muted-foreground"}
-        >
-          <Heart className={`w-5 h-5 ${isFavorite ? "fill-current" : ""}`} />
-        </Button>
-      </header>
-
-      <main className="pb-20">
-        {/* Carrossel de Fotos */}
-        <div className="relative">
-          <Carousel className="w-full">
-            <CarouselContent>
-              {[restaurantImage, restaurant2, restaurant3, restaurant4].map((image, index) => (
-                <CarouselItem key={index}>
-                  <div className="relative h-64 w-full">
-                    <img 
-                      src={image} 
-                      alt={`${restaurant.name} - Foto ${index + 1}`}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                </CarouselItem>
-              ))}
-            </CarouselContent>
-            <CarouselPrevious className="left-4 bg-card/80 border-0 hover:bg-card/90 text-foreground/80 w-8 h-8" />
-            <CarouselNext className="right-4 bg-card/80 border-0 hover:bg-card/90 text-foreground/80 w-8 h-8" />
-          </Carousel>
-          
-          {/* Logo opcional */}
-          <div className="absolute bottom-4 left-4">
-            <div className="w-16 h-16 bg-card rounded-lg shadow-lg flex items-center justify-center">
-              <span className="text-2xl font-bold text-primary">
-                {restaurant.name.charAt(0)}
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* Informações Principais */}
-        <div className="p-4 space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="flex items-center gap-1">
-                <Star className="w-4 h-4 fill-primary text-primary" />
-                <span className="font-semibold text-foreground">
-                  {stats?.averageRating || restaurant.rating}
-                </span>
-                <span className="text-muted-foreground">
-                  ({stats?.totalReviews || 0} avaliações)
-                </span>
-              </div>
-            </div>
-            <Badge variant="secondary">{restaurant.category}</Badge>
-          </div>
-
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-1">
-              <DollarSign className="w-4 h-4 text-muted-foreground" />
-              <span className="text-foreground">{restaurant.price_range || "$$"}</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <MapPin className="w-4 h-4 text-muted-foreground" />
-              <span className="text-foreground flex-1">{restaurant.location || restaurant.distance}</span>
-            </div>
-          </div>
-
-          <Button 
-            variant="outline" 
-            className="w-full"
-            onClick={handleViewMap}
+      {/* Header with back button */}
+      <div className="bg-card border-b p-4">
+        <div className="flex items-center justify-between">
+          <Button
+            variant="ghost"
+            onClick={() => navigate('/restaurant/home')}
           >
-            <MapPin className="w-4 h-4 mr-2" />
-            Ver no Mapa
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Voltar
+          </Button>
+          
+          <h1 className="text-xl font-semibold">Perfil do Restaurante</h1>
+          
+          <Button size="sm">
+            <Edit className="w-4 h-4 mr-2" />
+            Editar
           </Button>
         </div>
+      </div>
 
-        <Separator />
+      <main className="p-4 space-y-6">
+        {/* Restaurant Info */}
+        <Card>
+          <CardContent className="p-6">
+            <div className="text-center mb-6">
+              <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+                <User className="w-10 h-10 text-primary" />
+              </div>
+              <h2 className="text-2xl font-bold">{restaurant.name}</h2>
+              <p className="text-muted-foreground">{restaurant.category}</p>
+              <div className="flex items-center justify-center gap-2 mt-2">
+                <span className="text-yellow-500">★ {restaurant.rating}</span>
+                <span className="text-muted-foreground">({restaurant.totalReviews} avaliações)</span>
+              </div>
+            </div>
+            
+            <div className="space-y-4">
+              <div>
+                <h3 className="font-semibold mb-2">Descrição</h3>
+                <p className="text-muted-foreground">{restaurant.description}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
-        {/* Seção Sobre */}
-        <div className="p-4">
-          <h2 className="text-lg font-semibold text-foreground mb-3">Sobre</h2>
-          <p className="text-muted-foreground leading-relaxed">
-            {restaurant.description || "Deliciosa comida com ingredientes frescos e de qualidade. Venha experimentar nossa culinária especial!"}
-          </p>
-        </div>
+        {/* Contact Information */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Phone className="w-5 h-5" />
+              Informações de Contato
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="flex items-center gap-3">
+              <MapPin className="w-4 h-4 text-muted-foreground" />
+              <span className="text-sm">{restaurant.address}</span>
+            </div>
+            
+            <div className="flex items-center gap-3">
+              <Phone className="w-4 h-4 text-muted-foreground" />
+              <span className="text-sm">{restaurant.phone}</span>
+            </div>
+            
+            <div className="flex items-center gap-3">
+              <span className="w-4 h-4 text-center text-xs text-muted-foreground">📱</span>
+              <span className="text-sm">{restaurant.whatsapp}</span>
+            </div>
+            
+            <div className="flex items-center gap-3">
+              <span className="w-4 h-4 text-center text-xs text-muted-foreground">📧</span>
+              <span className="text-sm">{restaurant.email}</span>
+            </div>
+            
+            <div className="flex items-center gap-3">
+              <span className="w-4 h-4 text-center text-xs text-muted-foreground">🌐</span>
+              <span className="text-sm">{restaurant.website}</span>
+            </div>
+          </CardContent>
+        </Card>
 
-        <Separator />
-
-        {/* Cardápio */}
-        <div className="p-4">
-          <h2 className="text-lg font-semibold text-foreground mb-4">Cardápio</h2>
-          
-          {menu && menu.length > 0 ? (
-            <div className="space-y-6">
-              {menu.map((category) => (
-                <div key={category.id}>
-                  <h3 className="text-md font-medium text-foreground mb-3">{category.name}</h3>
-                  <div className="space-y-3">
-                    {category.menu_items?.map((item) => (
-                      <Card key={item.id} className="border-0 shadow-sm">
-                        <CardContent className="p-3">
-                          <div className="flex gap-3">
-                            {item.image_url && (
-                              <img 
-                                src={imageMap[item.image_url as keyof typeof imageMap] || restaurant1}
-                                alt={item.name}
-                                className="w-16 h-16 object-cover rounded-lg"
-                              />
-                            )}
-                            <div className="flex-1">
-                              <h4 className="font-medium text-foreground">{item.name}</h4>
-                              {item.description && (
-                                <p className="text-sm text-muted-foreground">{item.description}</p>
-                              )}
-                              <p className="text-primary font-semibold mt-1">
-                                R$ {item.price.toFixed(2).replace('.', ',')}
-                              </p>
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
+        {/* Opening Hours */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Clock className="w-5 h-5" />
+              Horário de Funcionamento
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              {Object.entries(restaurant.openingHours).map(([day, hours]) => (
+                <div key={day} className="flex justify-between py-2 border-b border-border/50 last:border-0">
+                  <span className="text-sm font-medium">{dayNames[day as keyof typeof dayNames]}</span>
+                  <span className="text-sm text-muted-foreground">{hours}</span>
                 </div>
               ))}
             </div>
-          ) : (
-            <div className="space-y-6">
-              <div>
-                <h3 className="text-md font-medium text-foreground mb-3">Pratos Principais</h3>
-                <div className="space-y-3">
-                  <Card className="border-0 shadow-sm">
-                    <CardContent className="p-3">
-                      <div className="flex gap-3">
-                        <img 
-                          src={restaurant1}
-                          alt="Prato Especial"
-                          className="w-16 h-16 object-cover rounded-lg"
-                        />
-                        <div className="flex-1">
-                          <h4 className="font-medium text-foreground">Prato Especial</h4>
-                          <p className="text-sm text-muted-foreground">Delicioso prato da casa</p>
-                          <p className="text-primary font-semibold mt-1">R$ 29,90</p>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
+          </CardContent>
+        </Card>
+
+        {/* Profile Completion */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Status do Perfil</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              <div className="flex justify-between items-center">
+                <span className="text-sm">Completude do perfil</span>
+                <span className="text-sm font-semibold">85%</span>
               </div>
+              <div className="w-full bg-secondary rounded-full h-2">
+                <div className="bg-primary h-2 rounded-full" style={{ width: '85%' }}></div>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Adicione fotos do cardápio para completar seu perfil
+              </p>
             </div>
-          )}
-        </div>
-
-        <Separator />
-
-        {/* Avaliações */}
-        <div className="p-4">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-foreground">Avaliações</h2>
-            <Button variant="ghost" size="sm" onClick={handleViewAllReviews}>
-              Ver todas
-            </Button>
-          </div>
-          
-          <Carousel className="w-full">
-            <CarouselContent className="-ml-2 md:-ml-4">
-              {reviews && reviews.length > 0 ? (
-                reviews.map((review) => (
-                  <CarouselItem key={review.id} className="pl-2 md:pl-4 basis-4/5 md:basis-1/2">
-                    <Card className="border-0 shadow-sm">
-                      <CardContent className="p-4">
-                        <div className="flex gap-3">
-                          <Avatar className="w-10 h-10 flex-shrink-0">
-                            <AvatarImage src={review.profiles?.avatar_url || "/src/assets/logo.png"} />
-                            <AvatarFallback>
-                              {review.profiles?.display_name?.charAt(0) || 'U'}
-                            </AvatarFallback>
-                          </Avatar>
-                          
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center justify-between mb-2">
-                              <span className="font-medium text-foreground truncate">
-                                {review.profiles?.display_name || 'Usuário'}
-                              </span>
-                              <span className="text-xs text-muted-foreground flex-shrink-0">
-                                {new Date(review.created_at).toLocaleDateString('pt-BR')}
-                              </span>
-                            </div>
-                            
-                            <div className="flex items-center gap-1 mb-2">
-                              {[...Array(5)].map((_, i) => (
-                                <Star 
-                                  key={i} 
-                                  className={`w-3 h-3 ${i < review.rating ? 'fill-primary text-primary' : 'text-muted-foreground'}`} 
-                                />
-                              ))}
-                            </div>
-                            
-                            {review.comment && (
-                              <p className="text-foreground text-sm mb-2 line-clamp-3">{review.comment}</p>
-                            )}
-                            
-                            {review.review_images && review.review_images.length > 0 && (
-                              <div className="flex gap-2">
-                                {review.review_images.slice(0, 3).map((image, index) => (
-                                  <img 
-                                    key={index}
-                                    src={imageMap[image as keyof typeof imageMap] || restaurant1}
-                                    alt={`Foto da avaliação ${index + 1}`}
-                                    className="w-12 h-12 object-cover rounded flex-shrink-0"
-                                  />
-                                ))}
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </CarouselItem>
-                ))
-              ) : (
-                <CarouselItem className="pl-2 md:pl-4 basis-4/5 md:basis-1/2">
-                  <Card className="border-0 shadow-sm">
-                    <CardContent className="p-4">
-                      <div className="text-center">
-                        <p className="text-muted-foreground">Ainda não há avaliações</p>
-                        <p className="text-sm text-muted-foreground">Seja o primeiro a avaliar!</p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </CarouselItem>
-              )}
-            </CarouselContent>
-          </Carousel>
-        </div>
-
-        {/* Ações Rápidas */}
-        <div className="p-4">
-          <div className="grid grid-cols-3 gap-3">
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={handleAddReview}
-              className="flex-col h-auto py-3"
-            >
-              <MessageCircle className="w-5 h-5 mb-1" />
-              <span className="text-xs">Avaliar</span>
-            </Button>
-            
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={handleShare}
-              className="flex-col h-auto py-3"
-            >
-              <Share className="w-5 h-5 mb-1" />
-              <span className="text-xs">Compartilhar</span>
-            </Button>
-            
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={handleWhatsApp}
-              className="flex-col h-auto py-3"
-            >
-              <Phone className="w-5 h-5 mb-1" />
-              <span className="text-xs">WhatsApp</span>
-            </Button>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       </main>
-
+      
       <BottomNavigation />
     </div>
   );
-}
+};
+
+export default RestaurantProfile;
