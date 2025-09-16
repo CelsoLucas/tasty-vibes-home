@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
 export interface Restaurant {
@@ -153,7 +153,7 @@ export const useRestaurantReviews = (restaurantId: string) => {
 // Hook para buscar cardápio de um restaurante
 export const useRestaurantMenu = (restaurantId: string) => {
   return useQuery({
-    queryKey: ['menu', restaurantId],
+    queryKey: ['restaurant-menu', restaurantId],
     queryFn: async (): Promise<MenuCategory[]> => {
       try {
         const { data, error } = await (supabase as any)
@@ -218,5 +218,211 @@ export const useRestaurantStats = (restaurantId: string) => {
       }
     },
     enabled: !!restaurantId,
+  });
+};
+
+// Menu mutation hooks
+export const useCreateMenuCategory = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async ({ restaurantId, name, displayOrder }: { 
+      restaurantId: string; 
+      name: string; 
+      displayOrder?: number; 
+    }) => {
+      const { data, error } = await (supabase as any)
+        .from('menu_categories')
+        .insert({
+          restaurant_id: restaurantId,
+          name,
+          display_order: displayOrder || 0
+        })
+        .select()
+        .single();
+      
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['restaurant-menu', variables.restaurantId] });
+    }
+  });
+};
+
+export const useUpdateMenuCategory = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async ({ 
+      categoryId, 
+      name, 
+      displayOrder,
+      restaurantId 
+    }: { 
+      categoryId: string; 
+      name: string; 
+      displayOrder?: number;
+      restaurantId: string;
+    }) => {
+      const { data, error } = await (supabase as any)
+        .from('menu_categories')
+        .update({
+          name,
+          display_order: displayOrder
+        })
+        .eq('id', categoryId)
+        .select()
+        .single();
+      
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['restaurant-menu', variables.restaurantId] });
+    }
+  });
+};
+
+export const useDeleteMenuCategory = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async ({ categoryId, restaurantId }: { categoryId: string; restaurantId: string }) => {
+      const { error } = await (supabase as any)
+        .from('menu_categories')
+        .delete()
+        .eq('id', categoryId);
+      
+      if (error) throw error;
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['restaurant-menu', variables.restaurantId] });
+    }
+  });
+};
+
+export const useCreateMenuItem = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async ({ 
+      restaurantId, 
+      categoryId, 
+      name, 
+      description, 
+      price, 
+      isAvailable = true,
+      imageUrl 
+    }: { 
+      restaurantId: string; 
+      categoryId: string;
+      name: string; 
+      description?: string; 
+      price: number;
+      isAvailable?: boolean;
+      imageUrl?: string;
+    }) => {
+      const { data, error } = await (supabase as any)
+        .from('menu_items')
+        .insert({
+          restaurant_id: restaurantId,
+          category_id: categoryId,
+          name,
+          description,
+          price,
+          is_available: isAvailable,
+          image_url: imageUrl
+        })
+        .select()
+        .single();
+      
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['restaurant-menu', variables.restaurantId] });
+    }
+  });
+};
+
+export const useUpdateMenuItem = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async ({ 
+      itemId,
+      restaurantId,
+      name, 
+      description, 
+      price, 
+      isAvailable,
+      imageUrl 
+    }: { 
+      itemId: string;
+      restaurantId: string;
+      name?: string; 
+      description?: string; 
+      price?: number;
+      isAvailable?: boolean;
+      imageUrl?: string;
+    }) => {
+      const updateData: any = {};
+      if (name !== undefined) updateData.name = name;
+      if (description !== undefined) updateData.description = description;
+      if (price !== undefined) updateData.price = price;
+      if (isAvailable !== undefined) updateData.is_available = isAvailable;
+      if (imageUrl !== undefined) updateData.image_url = imageUrl;
+      
+      const { data, error } = await (supabase as any)
+        .from('menu_items')
+        .update(updateData)
+        .eq('id', itemId)
+        .select()
+        .single();
+      
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['restaurant-menu', variables.restaurantId] });
+    }
+  });
+};
+
+export const useDeleteMenuItem = () => {
+  const queryClient = useQueryClient();
+  
+  return useMutation({
+    mutationFn: async ({ itemId, restaurantId }: { itemId: string; restaurantId: string }) => {
+      const { error } = await (supabase as any)
+        .from('menu_items')
+        .delete()
+        .eq('id', itemId);
+      
+      if (error) throw error;
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['restaurant-menu', variables.restaurantId] });
+    }
+  });
+};
+
+export const useRestaurantProfile = () => {
+  return useQuery({
+    queryKey: ['restaurant-profile'],
+    queryFn: async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated');
+
+      const { data, error } = await (supabase as any)
+        .from('restaurant_profiles')
+        .select('*')
+        .eq('user_id', user.id)
+        .single();
+
+      if (error) throw error;
+      return data;
+    }
   });
 };
