@@ -2,6 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { AppHeader } from "@/components/AppHeader";
 import { BottomNavigation } from "@/components/BottomNavigation";
+import { Skeleton } from "@/components/ui/skeleton";
 import { 
   ArrowLeft, 
   User, 
@@ -15,9 +16,13 @@ import {
   FileText
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useRestaurantProfile } from "@/hooks/useRestaurants";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 const RestaurantSettings = () => {
   const navigate = useNavigate();
+  const { data: profile, isLoading: profileLoading } = useRestaurantProfile();
 
   const settingsOptions = [
     {
@@ -84,9 +89,17 @@ const RestaurantSettings = () => {
     }
   ];
 
-  const handleLogout = () => {
-    // TODO: Implement logout logic
-    navigate('/login');
+  const handleLogout = async () => {
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      
+      toast.success("Logout realizado com sucesso!");
+      navigate('/login');
+    } catch (error) {
+      console.error('Error during logout:', error);
+      toast.error("Erro ao fazer logout. Tente novamente.");
+    }
   };
 
   return (
@@ -114,22 +127,44 @@ const RestaurantSettings = () => {
         {/* Restaurant Info */}
         <Card>
           <CardContent className="p-6">
-            <div className="flex items-center gap-4">
-              <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
-                <User className="w-8 h-8 text-primary" />
+            {profileLoading ? (
+              <div className="flex items-center gap-4">
+                <Skeleton className="w-16 h-16 rounded-full" />
+                <div className="flex-1 space-y-2">
+                  <Skeleton className="h-6 w-48" />
+                  <Skeleton className="h-4 w-32" />
+                  <Skeleton className="h-4 w-56" />
+                </div>
+                <Skeleton className="h-9 w-20" />
               </div>
-              
-              <div className="flex-1">
-                <h3 className="font-semibold text-lg">Bistro da Vila</h3>
-                <p className="text-muted-foreground">Restaurante Italiano</p>
-                <p className="text-sm text-muted-foreground">contato@bistrodavila.com.br</p>
+            ) : (
+              <div className="flex items-center gap-4">
+                <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
+                  <User className="w-8 h-8 text-primary" />
+                </div>
+                
+                <div className="flex-1">
+                  <h3 className="font-semibold text-lg">
+                    {profile?.restaurant_name || "Nome do Restaurante"}
+                  </h3>
+                  <p className="text-muted-foreground">
+                    {profile?.category || "Categoria"}
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    {profile?.email || "email@restaurante.com"}
+                  </p>
+                </div>
+                
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => navigate('/restaurant/profile')}
+                >
+                  <User className="w-4 h-4 mr-2" />
+                  Editar
+                </Button>
               </div>
-              
-              <Button variant="outline" size="sm">
-                <User className="w-4 h-4 mr-2" />
-                Editar
-              </Button>
-            </div>
+            )}
           </CardContent>
         </Card>
 
