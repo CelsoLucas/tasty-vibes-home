@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { AppHeader } from "@/components/AppHeader";
 import { BottomNavigation } from "@/components/BottomNavigation";
 import { Skeleton } from "@/components/ui/skeleton";
+import { RestaurantSettingsModals } from "@/components/RestaurantSettingsModals";
 import { 
   ArrowLeft, 
   User, 
@@ -19,10 +20,12 @@ import { useNavigate } from "react-router-dom";
 import { useRestaurantProfile } from "@/hooks/useRestaurants";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useState } from "react";
 
 const RestaurantSettings = () => {
   const navigate = useNavigate();
   const { data: profile, isLoading: profileLoading } = useRestaurantProfile();
+  const [openModal, setOpenModal] = useState<string | null>(null);
 
   const settingsOptions = [
     {
@@ -32,13 +35,13 @@ const RestaurantSettings = () => {
           icon: User,
           title: "Informações Pessoais",
           description: "Edite seus dados pessoais",
-          action: () => {}
+          action: () => setOpenModal('personal')
         },
         {
           icon: Lock,
           title: "Segurança",
           description: "Altere sua senha e configurações de segurança",
-          action: () => {}
+          action: () => setOpenModal('security')
         }
       ]
     },
@@ -49,13 +52,13 @@ const RestaurantSettings = () => {
           icon: FileText,
           title: "Dados do Restaurante",
           description: "Informações legais e documentos",
-          action: () => {}
+          action: () => setOpenModal('restaurant')
         },
         {
           icon: Bell,
           title: "Notificações",
           description: "Configure quando receber notificações",
-          action: () => {}
+          action: () => setOpenModal('notifications')
         }
       ]
     },
@@ -72,7 +75,7 @@ const RestaurantSettings = () => {
           icon: Shield,
           title: "Privacidade",
           description: "Controle quem pode ver suas informações",
-          action: () => {}
+          action: () => setOpenModal('privacy')
         }
       ]
     },
@@ -83,7 +86,7 @@ const RestaurantSettings = () => {
           icon: HelpCircle,
           title: "Ajuda",
           description: "FAQ e suporte técnico",
-          action: () => {}
+          action: () => setOpenModal('help')
         }
       ]
     }
@@ -246,6 +249,11 @@ const RestaurantSettings = () => {
           <p>© 2024 Tasty - Todos os direitos reservados</p>
         </div>
       </main>
+      
+      <RestaurantSettingsModals 
+        openModal={openModal} 
+        setOpenModal={setOpenModal} 
+      />
       
       <BottomNavigation />
     </div>
