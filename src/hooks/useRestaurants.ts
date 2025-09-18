@@ -42,15 +42,28 @@ export interface MenuItem {
 const fetchRestaurants = async (): Promise<Restaurant[]> => {
   try {
     const { data, error } = await (supabase as any)
-      .from('restaurants')
+      .from('restaurant_profiles')
       .select('*')
-      .order('rating', { ascending: false });
+      .order('created_at', { ascending: false });
 
     if (error) {
       throw new Error(error.message);
     }
 
-    return data || [];
+    // Transform restaurant_profiles data to match Restaurant interface
+    return (data || []).map(profile => ({
+      id: profile.id,
+      name: profile.restaurant_name || 'Restaurante',
+      category: profile.category || 'Restaurante',
+      rating: 4.5, // Default rating
+      distance: '2.5 km', // Default distance
+      image_url: '/placeholder.svg',
+      description: profile.description,
+      price_range: '$$',
+      location: profile.address,
+      phone: profile.phone,
+      whatsapp: profile.whatsapp
+    }));
   } catch (error) {
     console.error('Error fetching restaurants:', error);
     throw error;
@@ -70,7 +83,7 @@ export const useRestaurant = (id: string) => {
     queryFn: async (): Promise<Restaurant | null> => {
       try {
         const { data, error } = await (supabase as any)
-          .from('restaurants')
+          .from('restaurant_profiles')
           .select('*')
           .eq('id', id)
           .maybeSingle();
@@ -79,7 +92,22 @@ export const useRestaurant = (id: string) => {
           throw new Error(error.message);
         }
 
-        return data;
+        if (!data) return null;
+
+        // Transform restaurant_profiles data to match Restaurant interface
+        return {
+          id: data.id,
+          name: data.restaurant_name || 'Restaurante',
+          category: data.category || 'Restaurante',
+          rating: 4.5, // Default rating
+          distance: '2.5 km', // Default distance
+          image_url: '/placeholder.svg',
+          description: data.description,
+          price_range: '$$',
+          location: data.address,
+          phone: data.phone,
+          whatsapp: data.whatsapp
+        };
       } catch (error) {
         console.error('Error fetching restaurant:', error);
         throw error;

@@ -19,61 +19,15 @@ import restaurant3 from "@/assets/restaurant-3.jpg";
 import restaurant4 from "@/assets/restaurant-4.jpg";
 import restaurant5 from "@/assets/restaurant-5.jpg";
 
-// Mock data for demonstration
-const mockRestaurant = {
-  id: "1",
-  name: "Restaurante Bella Vista",
-  category: "Italiana",
-  rating: 4.5,
-  reviewCount: 128,
-  priceRange: "$$",
-  location: "Centro, São Paulo",
-  description: "Autêntica culinária italiana com pratos tradicionais preparados com ingredientes frescos e importados. Ambiente aconchegante perfeito para jantares românticos.",
-  images: [
-    "/src/assets/restaurant-1.jpg",
-    "/src/assets/restaurant-2.jpg",
-    "/src/assets/restaurant-3.jpg",
-    "/src/assets/restaurant-4.jpg"
-  ],
-  logo: "/src/assets/logo.png",
-  phone: "+55 11 99999-9999"
-};
-
-const mockMenuItems = [
-  {
-    category: "Entradas",
-    items: [
-      { id: "1", name: "Bruschetta Italiana", price: "R$ 18,90", image: "/src/assets/restaurant-1.jpg" },
-      { id: "2", name: "Antipasto Misto", price: "R$ 32,90", image: "/src/assets/restaurant-2.jpg" }
-    ]
-  },
-  {
-    category: "Pratos Principais",
-    items: [
-      { id: "3", name: "Lasanha Bolonhesa", price: "R$ 45,90", image: "/src/assets/restaurant-3.jpg" },
-      { id: "4", name: "Spaghetti Carbonara", price: "R$ 38,90", image: "/src/assets/restaurant-4.jpg" }
-    ]
-  }
+// Default images for restaurants
+const defaultImages = [
+  restaurant1,
+  restaurant2,
+  restaurant3,
+  restaurant4,
+  restaurant5
 ];
 
-const mockReviews = [
-  {
-    id: "1",
-    user: { name: "Maria Silva", avatar: "/src/assets/logo.png" },
-    rating: 5,
-    comment: "Experiência incrível! A comida estava deliciosa e o atendimento impecável.",
-    date: "2024-01-20",
-    images: ["/src/assets/restaurant-1.jpg"]
-  },
-  {
-    id: "2",
-    user: { name: "João Santos", avatar: "/src/assets/logo.png" },
-    rating: 4,
-    comment: "Ambiente muito agradável, preços justos. Recomendo!",
-    date: "2024-01-18",
-    images: []
-  }
-];
 
 export default function RestaurantProfile() {
   const { id } = useParams<{ id: string }>();
