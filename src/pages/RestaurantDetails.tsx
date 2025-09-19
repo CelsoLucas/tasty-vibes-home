@@ -35,10 +35,19 @@ export default function RestaurantProfile() {
   const [isFavorite, setIsFavorite] = useState(false);
   const [activeCategory, setActiveCategory] = useState<string>("");
   const sectionRefs = useRef<{ [key: string]: HTMLElement | null }>({});
+  
+  // All hooks must be called before any early returns
   const { data: restaurant, isLoading, error } = useRestaurant(id || "");
   const { data: reviews } = useRestaurantReviews(id || "");
   const { data: menu } = useRestaurantMenu(id || "");
   const { data: stats } = useRestaurantStats(id || "");
+
+  // Initialize first category as active - must be before early returns
+  useEffect(() => {
+    if (menu && menu.items && menu.items.length > 0 && !activeCategory) {
+      setActiveCategory('menu-section');
+    }
+  }, [menu, activeCategory]);
 
   // Map das imagens locais
   const imageMap = {
@@ -123,12 +132,6 @@ export default function RestaurantProfile() {
     }
   };
 
-  // Initialize first category as active
-  useEffect(() => {
-    if (menu && menu.items && menu.items.length > 0 && !activeCategory) {
-      setActiveCategory('menu-section');
-    }
-  }, [menu, activeCategory]);
 
   return (
     <div className="min-h-screen bg-background">
