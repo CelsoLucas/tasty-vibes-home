@@ -51,13 +51,13 @@ const fetchRestaurants = async (): Promise<Restaurant[]> => {
     }
 
     // Transform restaurant_profiles data to match Restaurant interface
-    return (data || []).map(profile => ({
+    return (data || []).map((profile, index) => ({
       id: profile.id,
       name: profile.restaurant_name || 'Restaurante',
       category: profile.category || 'Restaurante',
-      rating: 4.5, // Default rating
-      distance: '2.5 km', // Default distance
-      image_url: '/placeholder.svg',
+      rating: 0, // Default rating when no reviews
+      distance: '', // Remove fixed distance
+      image_url: `/src/assets/restaurant-${(index % 5) + 1}.jpg`,
       description: profile.description,
       price_range: '$$',
       location: profile.address,
@@ -99,9 +99,9 @@ export const useRestaurant = (id: string) => {
           id: data.id,
           name: data.restaurant_name || 'Restaurante',
           category: data.category || 'Restaurante',
-          rating: 4.5, // Default rating
-          distance: '2.5 km', // Default distance
-          image_url: '/placeholder.svg',
+          rating: 0, // Default rating when no reviews
+          distance: '', // Remove fixed distance
+          image_url: `/src/assets/restaurant-${Math.floor(Math.random() * 5) + 1}.jpg`,
           description: data.description,
           price_range: '$$',
           location: data.address,

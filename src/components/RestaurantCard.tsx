@@ -20,7 +20,7 @@ export const RestaurantCard = ({ id, name, image, rating, category, distance }: 
     navigate(`/restaurant/${id}`);
   };
 
-  const displayRating = stats?.averageRating || rating;
+  const displayRating = stats?.averageRating ?? rating;
   const reviewCount = stats?.totalReviews || 0;
 
   return (
@@ -36,8 +36,10 @@ export const RestaurantCard = ({ id, name, image, rating, category, distance }: 
             className="w-full h-[150px] object-cover rounded-t-lg"
           />
           <div className="absolute top-3 right-3 bg-card px-2 py-1 rounded-full shadow-sm flex items-center gap-1">
-            <Star className="w-3 h-3 fill-primary text-primary" />
-            <span className="text-xs font-medium text-foreground">{displayRating}</span>
+            <Star className={`w-3 h-3 ${displayRating > 0 ? 'fill-primary text-primary' : 'text-muted-foreground'}`} />
+            <span className="text-xs font-medium text-foreground">
+              {displayRating > 0 ? displayRating.toFixed(1) : 'Novo'}
+            </span>
           </div>
         </div>
         
@@ -45,10 +47,12 @@ export const RestaurantCard = ({ id, name, image, rating, category, distance }: 
           <h3 className="font-semibold text-foreground text-sm mb-1 line-clamp-1">{name}</h3>
           <p className="text-sm text-muted-foreground mb-2">{category}</p>
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-1">
-              <MapPin className="w-3 h-3 text-muted-foreground" />
-              <span className="text-xs text-muted-foreground">{distance}</span>
-            </div>
+            {distance && (
+              <div className="flex items-center gap-1">
+                <MapPin className="w-3 h-3 text-muted-foreground" />
+                <span className="text-xs text-muted-foreground">{distance}</span>
+              </div>
+            )}
             {reviewCount > 0 && (
               <span className="text-xs text-muted-foreground">
                 {reviewCount} avaliações
