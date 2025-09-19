@@ -51,15 +51,15 @@ const fetchRestaurants = async (): Promise<Restaurant[]> => {
     }
 
     // Transform restaurant_profiles data to match Restaurant interface
-    return (data || []).map((profile, index) => ({
+    return (data || []).map((profile) => ({
       id: profile.id,
       name: profile.restaurant_name || 'Restaurante',
-      category: profile.category || 'Restaurante',
+      category: profile.category || null,
       rating: 0, // Default rating when no reviews
       distance: '', // Remove fixed distance
-      image_url: `/src/assets/restaurant-${(index % 5) + 1}.jpg`,
+      image_url: null, // Use only real images from database
       description: profile.description,
-      price_range: '$$',
+      price_range: null, // Use only real price range from database
       location: profile.address,
       phone: profile.phone,
       whatsapp: profile.whatsapp
@@ -98,12 +98,12 @@ export const useRestaurant = (id: string) => {
         return {
           id: data.id,
           name: data.restaurant_name || 'Restaurante',
-          category: data.category || 'Restaurante',
+          category: data.category || null,
           rating: 0, // Default rating when no reviews
           distance: '', // Remove fixed distance
-          image_url: `/src/assets/restaurant-${Math.floor(Math.random() * 5) + 1}.jpg`,
+          image_url: null, // Use only real images from database
           description: data.description,
-          price_range: '$$',
+          price_range: null, // Use only real price range from database
           location: data.address,
           phone: data.phone,
           whatsapp: data.whatsapp

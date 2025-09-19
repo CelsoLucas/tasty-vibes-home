@@ -12,21 +12,6 @@ import { Separator } from "@/components/ui/separator";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { useRestaurant, useRestaurantReviews, useRestaurantMenu, useRestaurantStats } from "@/hooks/useRestaurants";
 
-// Import restaurant images
-import restaurant1 from "@/assets/restaurant-1.jpg";
-import restaurant2 from "@/assets/restaurant-2.jpg";
-import restaurant3 from "@/assets/restaurant-3.jpg";
-import restaurant4 from "@/assets/restaurant-4.jpg";
-import restaurant5 from "@/assets/restaurant-5.jpg";
-
-// Default images for restaurants
-const defaultImages = [
-  restaurant1,
-  restaurant2,
-  restaurant3,
-  restaurant4,
-  restaurant5
-];
 
 
 export default function RestaurantProfile() {
@@ -49,14 +34,6 @@ export default function RestaurantProfile() {
     }
   }, [menu, activeCategory]);
 
-  // Map das imagens locais
-  const imageMap = {
-    '/src/assets/restaurant-1.jpg': restaurant1,
-    '/src/assets/restaurant-2.jpg': restaurant2,
-    '/src/assets/restaurant-3.jpg': restaurant3,
-    '/src/assets/restaurant-4.jpg': restaurant4,
-    '/src/assets/restaurant-5.jpg': restaurant5,
-  };
 
   if (isLoading) {
     return (
@@ -90,7 +67,7 @@ export default function RestaurantProfile() {
     );
   }
 
-  const restaurantImage = imageMap[restaurant.image_url as keyof typeof imageMap] || restaurant1;
+  
 
   const handleBack = () => {
     navigate(-1);
@@ -111,8 +88,10 @@ export default function RestaurantProfile() {
   };
 
   const handleWhatsApp = () => {
-    const phone = restaurant.whatsapp || restaurant.phone || "5511999999999";
-    window.open(`https://wa.me/${phone.replace(/\D/g, '')}`);
+    const phone = restaurant.whatsapp || restaurant.phone;
+    if (phone) {
+      window.open(`https://wa.me/${phone.replace(/\D/g, '')}`);
+    }
   };
 
   const handleAddReview = () => {
@@ -158,35 +137,44 @@ export default function RestaurantProfile() {
       </header>
 
       <main className="pb-20">
-        {/* Carrossel de Fotos */}
-        <div className="relative">
-          <Carousel className="w-full">
-            <CarouselContent>
-              {[restaurantImage, restaurant2, restaurant3, restaurant4].map((image, index) => (
-                <CarouselItem key={index}>
+        {/* Carrossel de Fotos ou Logo */}
+        {restaurant.image_url ? (
+          <div className="relative">
+            <Carousel className="w-full">
+              <CarouselContent>
+                <CarouselItem>
                   <div className="relative h-64 w-full">
                     <img 
-                      src={image} 
-                      alt={`${restaurant.name} - Foto ${index + 1}`}
+                      src={restaurant.image_url} 
+                      alt={`${restaurant.name}`}
                       className="w-full h-full object-cover"
                     />
                   </div>
                 </CarouselItem>
-              ))}
-            </CarouselContent>
-            <CarouselPrevious className="left-4 bg-card/80 border-0 hover:bg-card/90 text-foreground/80 w-8 h-8" />
-            <CarouselNext className="right-4 bg-card/80 border-0 hover:bg-card/90 text-foreground/80 w-8 h-8" />
-          </Carousel>
-          
-          {/* Logo opcional */}
-          <div className="absolute bottom-4 left-4">
-            <div className="w-16 h-16 bg-card rounded-lg shadow-lg flex items-center justify-center">
-              <span className="text-2xl font-bold text-primary">
-                {restaurant.name.charAt(0)}
-              </span>
+              </CarouselContent>
+            </Carousel>
+            
+            {/* Logo opcional */}
+            <div className="absolute bottom-4 left-4">
+              <div className="w-16 h-16 bg-card rounded-lg shadow-lg flex items-center justify-center">
+                <span className="text-2xl font-bold text-primary">
+                  {restaurant.name.charAt(0)}
+                </span>
+              </div>
             </div>
           </div>
-        </div>
+        ) : (
+          <div className="relative h-64 w-full bg-muted flex items-center justify-center">
+            <div className="text-center">
+              <div className="w-24 h-24 bg-card rounded-lg shadow-lg flex items-center justify-center mx-auto mb-4">
+                <span className="text-4xl font-bold text-primary">
+                  {restaurant.name.charAt(0)}
+                </span>
+              </div>
+              <p className="text-muted-foreground">Fotos não disponíveis</p>
+            </div>
+          </div>
+        )}
 
         {/* Informações Principais */}
         <div className="p-4 space-y-4">
@@ -202,18 +190,22 @@ export default function RestaurantProfile() {
                 </span>
               </div>
             </div>
-            <Badge variant="secondary">{restaurant.category}</Badge>
+            {restaurant.category && <Badge variant="secondary">{restaurant.category}</Badge>}
           </div>
 
           <div className="flex items-center gap-4">
-            <div className="flex items-center gap-1">
-              <DollarSign className="w-4 h-4 text-muted-foreground" />
-              <span className="text-foreground">{restaurant.price_range || "$$"}</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <MapPin className="w-4 h-4 text-muted-foreground" />
-              <span className="text-foreground flex-1">{restaurant.location || restaurant.distance}</span>
-            </div>
+            {restaurant.price_range && (
+              <div className="flex items-center gap-1">
+                <DollarSign className="w-4 h-4 text-muted-foreground" />
+                <span className="text-foreground">{restaurant.price_range}</span>
+              </div>
+            )}
+            {restaurant.location && (
+              <div className="flex items-center gap-1">
+                <MapPin className="w-4 h-4 text-muted-foreground" />
+                <span className="text-foreground flex-1">{restaurant.location}</span>
+              </div>
+            )}
           </div>
 
           <Button 
@@ -229,12 +221,14 @@ export default function RestaurantProfile() {
         <Separator />
 
         {/* Seção Sobre */}
-        <div className="p-4">
-          <h2 className="text-lg font-semibold text-foreground mb-3">Sobre</h2>
-          <p className="text-muted-foreground leading-relaxed">
-            {restaurant.description || "Deliciosa comida com ingredientes frescos e de qualidade. Venha experimentar nossa culinária especial!"}
-          </p>
-        </div>
+        {restaurant.description && (
+          <div className="p-4">
+            <h2 className="text-lg font-semibold text-foreground mb-3">Sobre</h2>
+            <p className="text-muted-foreground leading-relaxed">
+              {restaurant.description}
+            </p>
+          </div>
+        )}
 
         <Separator />
 
@@ -267,7 +261,7 @@ export default function RestaurantProfile() {
                       {item.image_url && (
                         <div className="flex-shrink-0">
                           <img 
-                            src={imageMap[item.image_url as keyof typeof imageMap] || restaurant1}
+                            src={item.image_url}
                             alt={item.name}
                             className="w-20 h-20 object-cover rounded-lg"
                           />
@@ -279,28 +273,9 @@ export default function RestaurantProfile() {
               ))}
             </div>
           ) : (
-            <div className="space-y-6">
-              <div>
-                <h3 className="text-md font-medium text-foreground mb-3">Pratos Principais</h3>
-                <div className="space-y-3">
-                  <Card className="border-0 shadow-sm">
-                    <CardContent className="p-3">
-                      <div className="flex gap-3">
-                        <img 
-                          src={restaurant1}
-                          alt="Prato Especial"
-                          className="w-16 h-16 object-cover rounded-lg"
-                        />
-                        <div className="flex-1">
-                          <h4 className="font-medium text-foreground">Prato Especial</h4>
-                          <p className="text-sm text-muted-foreground">Delicioso prato da casa</p>
-                          <p className="text-primary font-semibold mt-1">R$ 29,90</p>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
-              </div>
+            <div className="text-center py-8">
+              <p className="text-muted-foreground">Cardápio não disponível</p>
+              <p className="text-sm text-muted-foreground mt-1">O restaurante ainda não adicionou itens ao cardápio</p>
             </div>
           )}
         </div>
@@ -359,7 +334,7 @@ export default function RestaurantProfile() {
                                 {review.review_images.slice(0, 3).map((image, index) => (
                                   <img 
                                     key={index}
-                                    src={imageMap[image as keyof typeof imageMap] || restaurant1}
+                                    src={image}
                                     alt={`Foto da avaliação ${index + 1}`}
                                     className="w-12 h-12 object-cover rounded flex-shrink-0"
                                   />
@@ -415,6 +390,7 @@ export default function RestaurantProfile() {
               variant="outline" 
               size="sm" 
               onClick={handleWhatsApp}
+              disabled={!restaurant.whatsapp && !restaurant.phone}
               className="flex-col h-auto py-3"
             >
               <Phone className="w-5 h-5 mb-1" />
